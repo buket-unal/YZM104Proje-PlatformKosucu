@@ -1,1 +1,0 @@
-/usr/bin/c++  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/MaratonKosu.dir/src/main.cpp.o -o MaratonKosu  -Wl,-rpath,/Users/buket/Desktop/proje-ilk-cpp-github/build/_deps/sfml-build/lib _deps/sfml-build/lib/libsfml-graphics.2.6.1.dylib _deps/sfml-build/lib/libsfml-window.2.6.1.dylib _deps/sfml-build/lib/libsfml-system.2.6.1.dylib
