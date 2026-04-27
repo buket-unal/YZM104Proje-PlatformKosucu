@@ -2,9 +2,20 @@
 #include <iostream>
 
 int main() {
-    // 1. Bir pencere oluşturuyoruz (800x600 boyutunda)
+    // Bir pencere oluşturma (800x600 boyutunda)
     sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucusu Oyunu");
     window.setFramerateLimit(60); // Saniyede 60 kare (FPS) sınırı
+
+    // karakter değişkenleri
+    sf::RectangleShape player(sf::Vector2f(50.0f, 50.0f));
+    player.setFillColor(sf::Color::Cyan);
+    player.setPosition(100.0f, 100.0f);
+
+    // Fizik Değişkenleri
+    sf::Vector2f velocity(0, 0);
+    float gravity = 0.5f;
+    float moveSpeed =5.0f;
+    float jumpSpeed = -12.0f;
 
     while(window.isOpen()){
         sf::Event event; // event:bilgisayarda yaptığın fiziksel etkileşimler(fare oynatma,tuşa basma...)
@@ -13,10 +24,20 @@ int main() {
                 window.close();
             }
         }
+
+        // FİZİK VE HAREKET
+        velocity.x = 0;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)) velocity.x = -moveSpeed;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) velocity.x = moveSpeed;
+
+        velocity.y += gravity; // yer çekimi karakteri hep aşağı çekecek
+        player.move(velocity); // karakteri hesaplanan hız kadar yürütecek
+
+        // GÖRÜNÜM
+        window.clear();
+        window.draw(player); // karakteri sahneye çizecek
+        window.display();
     }
-    
-    window.clear();
-    window.display();
 
     return 0;
-}
+} 
