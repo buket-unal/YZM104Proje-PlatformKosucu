@@ -3,27 +3,20 @@
 
 int main() {
     // 1. Bir pencere oluşturuyoruz (800x600 boyutunda)
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Buket'in Ilk SFML Projesi");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucusu Oyunu");
+    window.setFramerateLimit(60); // Saniyede 60 kare (FPS) sınırı
 
-    // 2. Yeşil dairemizi hazırlıyoruz
-    sf::CircleShape shape(100.f); // 100 yarıçapında
-    shape.setFillColor(sf::Color::Green); // Rengi yeşil
-    shape.setPosition(300.f, 200.f); // Penceredeki yeri
-
-    std::cout << "Pencere aciliyor, heyecan dorukta!" << std::endl;
-
-    // 3. Oyun döngüsü (Pencere açık kaldığı sürece çalışır)
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
+    while(window.isOpen()){
+        sf::Event event; // event:bilgisayarda yaptığın fiziksel etkileşimler(fare oynatma,tuşa basma...)
+        while(window.pollEvent(event)){ // olayları(esc basma, pencereyi kapatma.. tek tek alıp event'e koyar)
+            if(event.type == sf::Event::Closed){
                 window.close();
+            }
         }
-
-        window.clear();      // Ekranı temizle
-        window.draw(shape);   // Daireyi çiz
-        window.display();    // Ekranda göster
     }
+    
+    window.clear();
+    window.display();
 
     return 0;
 }
