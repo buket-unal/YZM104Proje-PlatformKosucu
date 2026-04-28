@@ -21,5 +21,5 @@ set(SFML_USE_SYSTEM_DEPS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SFML)
 
-add_executable(MaratonKosu src/main.cpp)
+add_executable(MaratonKosu src/main.cpp src/Player.cpp)
 target_link_libraries(MaratonKosu sfml-graphics sfml-window sfml-system)
