@@ -6,16 +6,21 @@ Player::Player() {
     shape.setPosition(100.0f, 100.0f);
 
     velocity = sf::Vector2f(0.0f, 0.0f);
-    gravity = 0.5f;
+    gravity = 0.4f;
     moveSpeed = 5.0f;
-    jumpSpeed = -12.0f;
+    jumpSpeed = -15.0f;
 }
 
 void Player::update() {
     // Yatay Hareket
     velocity.x = 0;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) velocity.x = -moveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) velocity.x = moveSpeed;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        velocity.x = -moveSpeed;
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        velocity.x = moveSpeed;
+    }
 
     // Yer Çekimi
     velocity.y += gravity;
