@@ -1,14 +1,15 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
-
+#include <vector>
 #include <SFML/Graphics.hpp>
+#include "Platform.hpp"
 
 class Player {
     public:
     Player();
 
     void update(); // her karede hareket hesaplayacak
-    void checkCollision(float groundLevel); // yer çekimi ve zemin kontrolü
+    void checkCollision(std::vector<Platform>& platforms);
     void draw(sf::RenderWindow& window); // Ekrana çizer
 
     private:

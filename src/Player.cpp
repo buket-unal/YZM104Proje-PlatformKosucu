@@ -29,15 +29,25 @@ void Player::update() {
     shape.move(velocity);
 }
 
-void Player::checkCollision(float groundLevel) {
-    // Zemin Çarpışma Kontrolü
-    if (shape.getPosition().y + shape.getSize().y >= groundLevel) {
-        shape.setPosition(shape.getPosition().x, groundLevel - shape.getSize().y);
-        velocity.y = 0;
+void Player::checkCollision(std::vector<Platform>& platforms){
+    // karakterin kendi sınıflarını (hayalet kutusunu) alıyoruz
+    sf::FloatRect playerBounds = shape.getGlobalBounds();
 
-        // Zıplama (Sadece yerdeyken)
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            velocity.y = jumpSpeed;
+    for(auto& platform : platforms){
+        sf::FloatRect platformBounds = platform.getBounds();
+
+        // eğer karakter ve platform kutuları kesişiyorsa (çarpışma varsa)
+        if(playerBounds.intersects(platformBounds)){
+            // Üstten çarpma (Platformun üstünde durma) mantığı
+            // Karakter aşağı düşerken çarpıyorsa:
+            if(velocity.y > 0 && playerBounds.top < platformBounds.top){
+                velocity.y = 0; // düşmeyi durdur
+                shape.setPosition(playerBounds.left, platformBounds.top - playerBounds.height);
+                // buradan zıplayabilir
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+                    velocity.y = jumpSpeed;
+                }
+            }
         }
     }
 }

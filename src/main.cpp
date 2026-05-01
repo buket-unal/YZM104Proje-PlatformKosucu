@@ -22,8 +22,8 @@ int main() {
 
         // --- GÜNCELLEME ---
         player.update();
-        player.checkCollision(500.0f);
-
+        player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
+ 
         // --- ÇİZİM ---
         window.clear();
         
