@@ -30,6 +30,11 @@ int main() {
         player.update();
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
 
+        // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
+        if(player.getPosition().y > 700.0f){
+            player.resetPosition();
+        }
+
         // --- KAMERA AYARI ---
         // karakterlerin konumunu alıp kamerayı oraya odaklıyoruz
 

@@ -12,6 +12,7 @@ class Player {
     void checkCollision(std::vector<Platform>& platforms);
     void draw(sf::RenderWindow& window); // Ekrana çizer
     sf::Vector2f getPosition() const;
+    void resetPosition();
 
     private:
     sf::RectangleShape shape;

@@ -59,3 +59,8 @@ void Player::draw(sf::RenderWindow& window) {
 sf::Vector2f Player::getPosition() const {
     return shape.getPosition();
 }
+
+void Player::resetPosition(){
+    shape.setPosition(100.0f, 100.0f); // başlangıç noktasına gönderecek
+    velocity = sf::Vector2f(0.0f, 0.0f); // düşme hızını sıfırlayacak
+}
