@@ -11,6 +11,7 @@ class Player {
     void update(); // her karede hareket hesaplayacak
     void checkCollision(std::vector<Platform>& platforms);
     void draw(sf::RenderWindow& window); // Ekrana çizer
+    sf::Vector2f getPosition() const;
 
     private:
     sf::RectangleShape shape;

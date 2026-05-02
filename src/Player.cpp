@@ -55,3 +55,7 @@ void Player::checkCollision(std::vector<Platform>& platforms){
 void Player::draw(sf::RenderWindow& window) {
     window.draw(shape);
 }
+
+sf::Vector2f Player::getPosition() const {
+    return shape.getPosition();
+}
