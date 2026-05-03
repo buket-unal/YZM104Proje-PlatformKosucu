@@ -2,8 +2,11 @@
 #include "Player.hpp"
 #include <vector>
 #include "Platform.hpp"
+#include <ctime> // rastgele sayıları zamana göre değiştirmek için
 
 int main() {
+    srand(static_cast<unsigned int>(time(0)));
+
     sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucusu");
     window.setFramerateLimit(60);
 
@@ -20,6 +23,8 @@ int main() {
 
     Player player;
 
+    float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -33,6 +38,24 @@ int main() {
         // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
         if(player.getPosition().y > 700.0f){
             player.resetPosition();
+        }
+
+        // --- SONSUZ PLATFORM ÜRETİMİ ---
+        // oyuncunun konumu + 800 (ekran genişliği), son platformun x'ini geçti mi
+        if(player.getPosition().x + 800.0f > lastX){
+
+            // yeni platformun koordinatlarını belirleme
+            // lastX'in üzerine 200 ile 400 arasında rastgele bir mesafe ekliyorum (zıplayabilsin diye)
+            float newX = lastX + (rand() % 200 + 200);
+
+            // yerden yüksekliği 300 ile 500 arasında rastgele olacak
+            float newY = (rand() % 200 + 300);
+
+            // platformu listeye ekliyorum
+            platforms.push_back(Platform(sf::Vector2f(150.0f, 20.0f), sf::Vector2f(newX, newY)));
+
+            // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
+            lastX = newX;
         }
 
         // --- KAMERA AYARI ---
