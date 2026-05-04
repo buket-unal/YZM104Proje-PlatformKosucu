@@ -9,6 +9,16 @@ Player::Player() {
     gravity = 0.4f;
     moveSpeed = 5.0f;
     jumpSpeed = -15.0f;
+
+    if(!texture.loadFromFile("../assets/player.png")){
+        // resim yüklenmezse terminalde hata mesajı verecek
+    }
+
+    // Sprite'a bu resmi kullanmasını söylüyoruz
+    sprite.setTexture(texture);
+
+    // resim çok küçükse (pixel art olduğu için) 2 kat büyütelim
+    sprite.setScale(2.0f, 2.0f);
 }
 
 void Player::update() {
@@ -27,6 +37,9 @@ void Player::update() {
 
     // Hareket Uygula
     shape.move(velocity);
+
+    // görselin, görünmez çarpışma kutusunu (shape) takip etmesini sağlayacak
+    sprite.setPosition(shape.getPosition());
 }
 
 void Player::checkCollision(std::vector<Platform>& platforms){
@@ -53,7 +66,8 @@ void Player::checkCollision(std::vector<Platform>& platforms){
 }
 
 void Player::draw(sf::RenderWindow& window) {
-    window.draw(shape);
+    // window.draw(shape);
+    window.draw(sprite);
 }
 
 sf::Vector2f Player::getPosition() const {

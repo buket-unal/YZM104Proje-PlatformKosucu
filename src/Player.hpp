@@ -16,6 +16,8 @@ class Player {
 
     private:
     sf::RectangleShape shape;
+    sf::Texture texture; // resmi ekran kartı hafızasına yükleyecek
+    sf::Sprite sprite; // resmi ekranda hareket ettiren obje
     sf::Vector2f velocity;
     float gravity;
     float moveSpeed;
