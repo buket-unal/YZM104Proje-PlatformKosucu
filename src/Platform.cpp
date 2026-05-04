@@ -16,10 +16,15 @@ Platform::Platform(sf::Vector2f size, sf::Vector2f position) {
     }
 
     sprite.setTexture(texture);
-
     sprite.setPosition(shape.getPosition());
 
-    sprite.setScale(4.0f, 4.0f);
+    // resmin kendi boyutunu alacak
+    sf::FloatRect spriteSize = sprite.getLocalBounds();
+
+    sprite.setScale(
+        shape.getSize().x / spriteSize.width,
+        shape.getSize().y / spriteSize.height
+    );
 }
 
 void Platform::draw(sf::RenderWindow& window) {

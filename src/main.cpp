@@ -4,6 +4,11 @@
 #include "Platform.hpp"
 #include <ctime> // rastgele sayıları zamana göre değiştirmek için
 
+//çalıştırmak için terminale yaz
+//cd Desktop/proje-ilk-cpp-github/build
+//pwd
+//make && ./MaratonKosu 
+
 int main() {
     srand(static_cast<unsigned int>(time(0)));
 
@@ -15,11 +20,11 @@ int main() {
 
     std::vector<Platform> platforms;
     // Platformları listeye ekliyoruz
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 20.0f), sf::Vector2f(400.0f, 400.0f)));
-    platforms.push_back(Platform(sf::Vector2f(150.0f, 20.0f), sf::Vector2f(100.0f, 300.0f)));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(400.0f, 400.0f)));
+    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(100.0f, 300.0f)));
 
     //test için uzak bir platform ekliyorum
-    platforms.push_back(Platform(sf::Vector2f(300.0f, 20.0f), sf::Vector2f(1000.0f, 450.0f)));
+    platforms.push_back(Platform(sf::Vector2f(300.0f, 60.0f), sf::Vector2f(1000.0f, 450.0f)));
 
     Player player;
 
@@ -52,7 +57,7 @@ int main() {
             float newY = (rand() % 200 + 300);
 
             // platformu listeye ekliyorum
-            platforms.push_back(Platform(sf::Vector2f(150.0f, 20.0f), sf::Vector2f(newX, newY)));
+            platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY)));
 
             // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
             lastX = newX;
