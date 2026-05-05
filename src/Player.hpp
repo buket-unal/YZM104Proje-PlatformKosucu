@@ -22,6 +22,8 @@ class Player {
     float gravity;
     float moveSpeed;
     float jumpSpeed;
+
+    bool isGrounded;
     
 };
 

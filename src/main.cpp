@@ -4,10 +4,6 @@
 #include "Platform.hpp"
 #include <ctime> // rastgele sayıları zamana göre değiştirmek için
 
-//çalıştırmak için terminale yaz
-//cd Desktop/proje-ilk-cpp-github/build
-//pwd
-//make && ./MaratonKosu 
 
 int main() {
     srand(static_cast<unsigned int>(time(0)));

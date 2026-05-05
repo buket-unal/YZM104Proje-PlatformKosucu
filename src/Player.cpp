@@ -10,6 +10,8 @@ Player::Player() {
     moveSpeed = 5.0f;
     jumpSpeed = -15.0f;
 
+    isGrounded = false;
+
     if(!texture.loadFromFile("../assets/player.png")){
         // resim yüklenmezse terminalde hata mesajı verecek
     }
@@ -25,11 +27,16 @@ void Player::update() {
     // Yatay Hareket
     velocity.x = 0;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         velocity.x = -moveSpeed;
     }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         velocity.x = moveSpeed;
+    }
+
+    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && isGrounded){
+        velocity.y = jumpSpeed;
+        isGrounded = false;
     }
 
     // Yer Çekimi
@@ -46,6 +53,11 @@ void Player::checkCollision(std::vector<Platform>& platforms){
     // karakterin kendi sınıflarını (hayalet kutusunu) alıyoruz
     sf::FloatRect playerBounds = shape.getGlobalBounds();
 
+    // varsayılan olarak havada olduğunu kabul edilecek
+    // aşağıda döngüde bir yere değiyorsa true yapılacak
+
+    bool touchAnyPlatform = false;
+
     for(auto& platform : platforms){
         sf::FloatRect platformBounds = platform.getBounds();
 
@@ -57,11 +69,15 @@ void Player::checkCollision(std::vector<Platform>& platforms){
                 velocity.y = 0; // düşmeyi durdur
                 shape.setPosition(playerBounds.left, platformBounds.top - playerBounds.height);
                 // buradan zıplayabilir
-                if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
-                    velocity.y = jumpSpeed;
-                }
+                isGrounded = true;
+                touchAnyPlatform = true;
+                
             }
         }
+    }
+    // eğer hiçbir platforma değmiyorsa isGrounded false kalacak
+    if(!touchAnyPlatform){
+        isGrounded = false;
     }
 }
 
