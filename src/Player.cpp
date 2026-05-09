@@ -1,8 +1,8 @@
 #include "Player.hpp"
 
 Player::Player() {
-    shape.setSize(sf::Vector2f(50.0f, 50.0f));
-    shape.setFillColor(sf::Color::Cyan);
+    shape.setSize(sf::Vector2f(30.0f, 40.0f));
+    shape.setFillColor(sf::Color::Red);
     shape.setPosition(100.0f, 100.0f);
 
     velocity = sf::Vector2f(0.0f, 0.0f);
@@ -46,7 +46,7 @@ void Player::update() {
     shape.move(velocity);
 
     // görselin, görünmez çarpışma kutusunu (shape) takip etmesini sağlayacak
-    sprite.setPosition(shape.getPosition());
+    sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y -15);
 }
 
 void Player::checkCollision(std::vector<Platform>& platforms){

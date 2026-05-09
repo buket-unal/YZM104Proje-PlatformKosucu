@@ -24,6 +24,19 @@ int main() {
 
     Player player;
 
+    sf::Texture backgroundTexture;
+    sf::Sprite backgroundSprite;
+
+    if(!backgroundTexture.loadFromFile("../assets/background.png")){
+        //hata mesajı
+    }
+    backgroundSprite.setTexture(backgroundTexture);
+
+    // arka planı ekran boyutuna sabitlemek için:
+    float scaleX = (float)window.getSize().x / backgroundTexture.getSize().x;
+    float scaleY = (float)window.getSize().y / backgroundTexture.getSize().y;
+    backgroundSprite.setScale(scaleX, scaleY);
+
     float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
 
     while (window.isOpen()) {
@@ -35,6 +48,13 @@ int main() {
         // --- GÜNCELLEME ---
         player.update();
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
+        window.setView(view);
+
+        // kameranın sol üst köşesini hesapla
+        sf::Vector2f cameraPos = view.getCenter() - (view.getSize() / 2.0f);
+
+        // gökyüzünü her zaman bu sol üst köşeye sabitle
+        backgroundSprite.setPosition(cameraPos.x, cameraPos.y);
 
         // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
         if(player.getPosition().y > 700.0f){
@@ -67,6 +87,9 @@ int main() {
  
         // --- ÇİZİM ---
         window.clear();
+
+        // gökyüzünü çizdirdik
+        window.draw(backgroundSprite);
         
         // 1. Önce platformları çizdiriyoruz (Döngü ile listedeki her şeyi ekrana basar)
         for (auto& platform : platforms) {
