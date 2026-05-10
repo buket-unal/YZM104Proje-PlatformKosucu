@@ -25,6 +25,9 @@ class Player {
 
     bool isGrounded;
     
+    sf::Clock animationClock; // Zamanı tutacak
+    int currentFrame; // Hangi karede olduğumuzu tutacak
+    bool isMoving; // Karakter hareket ediyor mu
 };
 
 #endif

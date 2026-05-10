@@ -13,6 +13,7 @@ private:
     sf::RectangleShape shape;
     static sf::Texture texture; // Zemin resmini tutacak
     sf::Sprite sprite; // Zemini ekrana çizecek
+
 };
 
 #endif

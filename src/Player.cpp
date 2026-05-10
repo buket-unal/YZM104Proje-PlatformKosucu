@@ -21,22 +21,65 @@ Player::Player() {
 
     // resim çok küçükse (pixel art olduğu için) 2 kat büyütelim
     sprite.setScale(2.0f, 2.0f);
+
+    currentFrame = 0; // ilk resimle başlayacak
+    isMoving = false; // başlangıçta karakter dursun
 }
 
 void Player::update() {
     // Yatay Hareket
     velocity.x = 0;
+    isMoving = false; // her karede başta duruyor kabul ettim
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        velocity.x = -moveSpeed;
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         velocity.x = moveSpeed;
+        isMoving = true;
+       
     }
+
+       else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+        velocity.x = -moveSpeed;
+        isMoving = true;
+
+    }
+
 
     if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && isGrounded){
         velocity.y = jumpSpeed;
         isGrounded = false;
+    }
+
+    if(!isGrounded){
+        // karakter havadaysa,zıplıyorsa; yürümeyi değil zıplama resmini gösterecek
+        texture.loadFromFile("../assets/player_walk.png");
+    }
+    else if(isMoving){
+        if(animationClock.getElapsedTime().asSeconds() > 0.1f){
+            currentFrame = (currentFrame == 0) ? 1 : 0;
+            
+            if(currentFrame == 0) texture.loadFromFile("../assets/player.png");
+            else texture.loadFromFile("../assets/player_walk.png");
+            animationClock.restart();
+        }
+    }
+    else{
+        // duruyorsa sabit durma resmi
+        texture.loadFromFile("../assets/player.png");
+    }
+
+    // texture değişmiş olabilir sprite'a buna bakmasını söylüyorum
+    sprite.setTexture(texture);
+
+    if(velocity.x > 0){ // sağa gidiyorsa
+        // orijinsl resim sola baktığı için sağa giderken ayna efekti yapıyorum
+        sprite.setScale(-2.0f, 2.0f);
+        // genişliği o anki resimden alıyorum
+        sprite.setOrigin(sprite.getLocalBounds().width, 0.f);
+    }
+    else if(velocity.x < 0){ // sola gidiyorsa
+        sprite.setScale(2.0f, 2.0f);
+        sprite.setOrigin(0.f, 0.f);
+       
     }
 
     // Yer Çekimi
