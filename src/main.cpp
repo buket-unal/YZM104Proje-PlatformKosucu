@@ -30,12 +30,18 @@ int main() {
     if(!backgroundTexture.loadFromFile("../assets/background.png")){
         //hata mesajı
     }
+    backgroundTexture.setRepeated(true);
     backgroundSprite.setTexture(backgroundTexture);
 
-    // arka planı ekran boyutuna sabitlemek için:
-    float scaleX = (float)window.getSize().x / backgroundTexture.getSize().x;
-    float scaleY = (float)window.getSize().y / backgroundTexture.getSize().y;
-    backgroundSprite.setScale(scaleX, scaleY);
+    // arka planı çok geniş bir dikdörtgen olarak ayarladım
+    backgroundSprite.setTextureRect(sf::IntRect(0, 0, 800, 600));
+
+    backgroundSprite.setScale(
+        (float)window.getSize().x / 800.0f,
+        (float)window.getSize().y / 600.0f
+    );
+    
+    //backgroundSprite.setScale(1.0f, scaleY);
 
     float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
 
@@ -53,8 +59,12 @@ int main() {
         // kameranın sol üst köşesini hesapla
         sf::Vector2f cameraPos = view.getCenter() - (view.getSize() / 2.0f);
 
-        // gökyüzünü her zaman bu sol üst köşeye sabitle
+        // arka planı kamera hızından biraz daha yavaş hareket ettiriyorum
         backgroundSprite.setPosition(cameraPos.x, cameraPos.y);
+
+        int offsetX = static_cast<int>(cameraPos.x * 0.1f);
+        backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
+
 
         // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
         if(player.getPosition().y > 700.0f){
