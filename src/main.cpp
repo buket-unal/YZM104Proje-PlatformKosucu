@@ -8,7 +8,7 @@
 int main() {
     srand(static_cast<unsigned int>(time(0)));
 
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucusu");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Maraton Kosucu");
     window.setFramerateLimit(60);
 
     // (0,0) noktasından başlayan, 800x600 boyutunda bir görüş alanı oluşturur
