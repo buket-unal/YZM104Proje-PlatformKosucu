@@ -3,6 +3,7 @@
 #include <vector>
 #include "Platform.hpp"
 #include <ctime> // rastgele sayıları zamana göre değiştirmek için
+#include "Enemy.hpp"
 
 
 int main() {
@@ -45,6 +46,15 @@ int main() {
 
     float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
 
+    sf::Texture enemyTexture;
+    if(!enemyTexture.loadFromFile("../assets/enemy.png")){
+        //hata mesajı
+    }
+
+    Enemy enemy(&enemyTexture, sf::Vector2f(600.0f, 400.0f), 200.0f);
+
+    sf::Clock clock;
+
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event)) {
@@ -52,7 +62,11 @@ int main() {
         }
 
         // --- GÜNCELLEME ---
+        float deltaTime = clock.restart().asSeconds(); // zamanı başlattım
+
         player.update();
+        enemy.update(deltaTime);
+
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
         window.setView(view);
 
@@ -70,6 +84,7 @@ int main() {
         if(player.getPosition().y > 700.0f){
             player.resetPosition();
         }
+
 
         // --- SONSUZ PLATFORM ÜRETİMİ ---
         // oyuncunun konumu + 800 (ekran genişliği), son platformun x'ini geçti mi
@@ -108,6 +123,8 @@ int main() {
 
         // 2. Sonra karakteri çizdiriyoruz
         player.draw(window);
+        
+        enemy.draw(window);
         
         window.display();
     }

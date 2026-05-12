@@ -9,7 +9,7 @@ Enemy::Enemy(sf::Texture* texture, sf::Vector2f position, float range){
     this->speed = 100.0f;
     this->direction = 1;
 
-    sprite.setScale(0.5f, 0.5f);
+    sprite.setScale(2.5f, 2.5f);
 }
 
 void Enemy::update(float deltaTime){
@@ -17,12 +17,12 @@ void Enemy::update(float deltaTime){
 
     if(sprite.getPosition().x > startX + range){
         direction = -1;
-        sprite.setScale(-0.5f, 0.5f);
+        sprite.setScale(-2.5f, 2.5f);
         sprite.setOrigin(sprite.getLocalBounds().width, 0);
     }
     else if(sprite.getPosition().x < startX){
         direction = 1;
-        sprite.setScale(0.5f, 0.5f);
+        sprite.setScale(2.5f, 2.5f);
         sprite.setOrigin(0, 0);
     }
 }

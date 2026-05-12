@@ -30,5 +30,13 @@ set(SFML_USE_SYSTEM_DEPS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(SFML)
 
-add_executable(PlatformKosucu src/main.cpp src/Player.cpp src/Platform.cpp)
+add_executable(PlatformKosucu 
+        src/main.cpp 
+        src/Player.cpp 
+        src/Player.hpp
+        src/Platform.cpp
+        src/Platform.hpp
+        src/Enemy.cpp
+        src/Enemy.hpp
+        )
 target_link_libraries(PlatformKosucu sfml-graphics sfml-window sfml-system)
