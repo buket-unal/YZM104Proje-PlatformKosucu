@@ -31,6 +31,6 @@ void Enemy::draw(sf::RenderWindow& window){
         window.draw(sprite);
     }
 
-    sf::FloatRect Enemy::getBounds() const{
+sf::FloatRect Enemy::getBounds() const{
         return sprite.getGlobalBounds();
     }

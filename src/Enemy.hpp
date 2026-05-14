@@ -13,6 +13,8 @@ class Enemy{
 
     sf::FloatRect getBounds() const; // çarpışma kontrolü için
 
+
+
     private:
     sf::Sprite sprite;
     float speed;
