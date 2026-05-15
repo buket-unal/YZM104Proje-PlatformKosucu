@@ -5,7 +5,7 @@
 
 class Platform {
 public:
-    Platform(sf::Vector2f size, sf::Vector2f position);
+    Platform(sf::Vector2f size, sf::Vector2f position, std::string texturePath);
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
 

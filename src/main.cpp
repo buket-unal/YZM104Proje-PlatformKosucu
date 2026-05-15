@@ -4,20 +4,22 @@
 #include "Platform.hpp"
 #include <ctime> // rastgele sayıları zamana göre değiştirmek için
 #include "Enemy.hpp"
+#include <iostream>
 
+using namespace std;
 
 int main() {
     srand(static_cast<unsigned int>(time(0)));
 
     // ---- PENCERE VE GÖRÜNÜM AYARLARI ----
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Maraton Kosucu");
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucu");
     window.setFramerateLimit(60);
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
     sf::Texture backgroundTexture, enemyTexture;
-    if(!backgroundTexture.loadFromFile("../assets/background.png") || !enemyTexture.loadFromFile("../assets/enemy.png")){
-        //hata mesajı
+    if(!backgroundTexture.loadFromFile("assets/background.png") || !enemyTexture.loadFromFile("assets/enemy.png")){
+        cout << "Arka plan veya dusman resmi yuklenemedi!" << endl;
     }
     
     backgroundTexture.setRepeated(true);
@@ -25,29 +27,28 @@ int main() {
     backgroundSprite.setTexture(backgroundTexture);
     //üstteki 2 satır yerine direkt sf::Sprite backgroundSprite(backgroundTexture); yazabilirim
     // arka planı çok geniş bir dikdörtgen olarak ayarladım
-    backgroundSprite.setTextureRect(sf::IntRect(0, 0, 800, 600));
-    backgroundSprite.setScale(
-        (float)window.getSize().x / 800.0f,
-        (float)window.getSize().y / 600.0f
-    );
-    
+    backgroundSprite.setTextureRect(sf::IntRect(0, 0, 1600, 600));
+
     // ---- OYUN NESNELERİ ----
     Player player;
     Enemy enemy(&enemyTexture, sf::Vector2f(600.0f, 400.0f), 200.0f);
 
-
     std::vector<Platform> platforms;
-    // Platformları listeye ekliyoruz
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(400.0f, 400.0f)));
-    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(100.0f, 300.0f)));
-    //test için uzak bir platform ekliyorum
-    platforms.push_back(Platform(sf::Vector2f(300.0f, 60.0f), sf::Vector2f(1000.0f, 450.0f)));
 
-    float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
+    // ÜST ÇİMLİ ZEMİN
+    platforms.push_back(Platform(sf::Vector2f(9000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), "assets/ground_dirt.png"));
+    // ALT TOPRAK DOLGU
+    platforms.push_back(Platform(sf::Vector2f(9000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), "assets/ground_dirt.png"));
+    // HAVADA ASILI SABİT PLATFORMLAR
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), "assets/ground_dirt.png"));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), "assets/ground_dirt.png"));
+
+    float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
     sf::Clock clock;
 
+    // ---- CAN ARAYÜZÜ ----
     sf::Texture heartFulltex;
-    if(!heartFulltex.loadFromFile("../assets/heart_full.png")){
+    if(!heartFulltex.loadFromFile("assets/heart_full.png")){
         // hata mesajı
     }
     sf::Sprite heartSprite;
@@ -77,28 +78,30 @@ int main() {
 
         // * SONSUZ PLATFORM Üretimi *
         // oyuncunun konumu + 800 (ekran genişliği), son platformun x'ini geçti mi
+        
         if(player.getPosition().x + 800.0f > lastX){
-            // yeni platformun koordinatlarını belirleme
-            float newX = lastX + (rand() % 200 + 200); // lastX'in üzerine 200 ile 400 arasında rastgele bir mesafe ekliyorum (zıplayabilsin diye)
-            float newY = (rand() % 200 + 300); // yerden yüksekliği 300 ile 500 arasında rastgele olacak
-            // platformu listeye ekliyorum
-            platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY)));
-            // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
-            lastX = newX;
-        }
+             // yeni platformun koordinatlarını belirleme
+             float newX = lastX + (rand() % 200 + 200); // lastX'in üzerine 200 ile 400 arasında rastgele bir mesafe ekliyorum (zıplayabilsin diye)
+             float newY = (rand() % 120 + 300);
+             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
+             // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
+             lastX = newX;
+         }
 
         // * KAMERA ve ARKA PLAN Pozisyonu *
         // karakterlerin konumunu alıp kamerayı oraya odaklıyoruz
         view.setCenter(player.getPosition().x, 300);
         window.setView(view); // pencereye. bu kamerayı kullanmasını söyledik
+        
         sf::Vector2f cameraPos = view.getCenter() - (view.getSize() / 2.0f); // kameranın sol üst köşesini hesapla
         backgroundSprite.setPosition(cameraPos.x, cameraPos.y); // arka planı kamera hızından biraz daha yavaş hareket ettiriyorum
+        
         int offsetX = static_cast<int>(cameraPos.x * 0.1f);
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
 
         // * Ölüm Kontrolü (Aşağı Düşme)
         // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
-        if(player.getPosition().y > 700.0f){
+        if(player.getPosition().y > 1000.0f){
             player.resetPosition();
         }
 

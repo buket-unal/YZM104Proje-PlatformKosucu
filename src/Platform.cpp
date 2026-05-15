@@ -5,49 +5,23 @@ sf::Texture Platform::texture;
 
 using namespace std;
 
-Platform::Platform(sf::Vector2f size, sf::Vector2f position) {
+Platform::Platform(sf::Vector2f size, sf::Vector2f position, std::string texturePath) {
     shape.setSize(size);
-    shape.setFillColor(sf::Color::Green);
+    shape.setFillColor(sf::Color::Transparent);
     shape.setPosition(position);
 
-    if(!texture.loadFromFile("../assets/ground.png")){
+    if(!texture.loadFromFile(texturePath)){
         // Hata kontrolü
-        cout << "Zemin resmi yuklenemedi!" << endl;
+        cout << texturePath << " yuklenemedi! " << endl;
     }
-
+    
+    texture.setRepeated(true); // resmin esnememesi, yan yana dizilmesi için
     sprite.setTexture(texture);
-    sprite.setPosition(shape.getPosition());
+    // kutunun boyutu kadar doku alanı ayarlamak için
+    sprite.setTextureRect(sf::IntRect(0, 0, static_cast<int>(size.x), static_cast<int>(size.y)));
+    sprite.setPosition(position); // görseli fiziksel kutu ile aynı yere koydum
 
     
-    int margin = 5;
-
-    sprite.setTextureRect(sf::IntRect(margin, margin, texture.getSize().x-(margin*2), texture.getSize().y-(margin*2)));
-
-    // kırpılmış görselin yeni boyutunu alacak
-    sf::FloatRect spriteSize = sprite.getLocalBounds();
-
-    // fiziksel kutuyu görsele eşitlemek lazım, resimden 5 piksel kırptığım için fiziksel
-    // kutunun üst sınırını da görsel olarak o kadar aşağı çekmiş oldum
-    // çarpışma kutusunun (shape) yüksekliğini ve konumunu buna göre ayarlıyorum
-
-    // görseldeki çimlerin gerçek konumuna gelmesi için shape'i biraz küçültüyorum
-    shape.setSize(sf::Vector2f(size.x, size.y));
-
-    shape.setPosition(position.x, position.y + margin);
-
-    // sprite'ı (görseli) ise orijinal pozisyonuna koyuyorum
-    sprite.setPosition(position.x, position.y);
-    
-
-    // 0'a bölmeyi engellemek için güvenlik kontrolü yapıyorum
-    if(spriteSize.width > 0 && spriteSize.height > 0){
-        // platformun istediğimiz boyutun (getSize()) göre ölçeklendiriyorum
-        sprite.setScale(
-            shape.getSize().x / spriteSize.width,
-            shape.getSize().y / spriteSize.height
-        );
-    }
-
 }
 
 void Platform::draw(sf::RenderWindow& window) {

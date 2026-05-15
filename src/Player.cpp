@@ -126,7 +126,7 @@ void Player::checkCollision(std::vector<Platform>& platforms){
     for(auto& platform : platforms){
         sf::FloatRect platformBounds = platform.getBounds();
 
-        // eğer karakter ve platform kutuları kesişiyorsa (çarpışma varsa)
+        // ÜSTTEN ÇARPMA
         if(playerBounds.intersects(platformBounds)){
             // Üstten çarpma (Platformun üstünde durma) mantığı
             // Karakter aşağı düşerken çarpıyorsa:
@@ -135,8 +135,23 @@ void Player::checkCollision(std::vector<Platform>& platforms){
                 shape.setPosition(playerBounds.left, platformBounds.top - playerBounds.height);
                 // buradan zıplayabilir
                 isGrounded = true;
-                touchAnyPlatform = true;
-                
+                touchAnyPlatform = true;     
+            }
+            // ALTTAN ÇARPMA
+            else if(velocity.y < 0 && playerBounds.top > platformBounds.top + platformBounds.height - 20.0f){
+                velocity.y = 0;
+                shape.setPosition(playerBounds.left, playerBounds.top + platformBounds.height);
+            }
+            // YANDAN ÇARPMA
+            else{
+                // sağdan çarpma
+                if(playerBounds.left + playerBounds.width < playerBounds.left + 20.0f){
+                    shape.setPosition(platformBounds.left - playerBounds.width, playerBounds.top);
+                }
+                // soldan çarpma
+                else if(playerBounds.left > platformBounds.left + platformBounds.width - 20.0f){
+                    shape.setPosition(platformBounds.left + platformBounds.width, playerBounds.top);
+                }
             }
         }
     }
