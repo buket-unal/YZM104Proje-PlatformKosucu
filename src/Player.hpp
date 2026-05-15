@@ -5,6 +5,7 @@
 #include "Platform.hpp"
 
 class Player {
+    
     public:
     Player();
 
@@ -15,6 +16,9 @@ class Player {
     void resetPosition();
     void takeDamage();
     sf::FloatRect getBounds();
+    int getHealth() const {
+        return health; //oyuncunun kaç canı kaldığını bilmesi için 
+    }
 
     private:
     sf::RectangleShape shape;

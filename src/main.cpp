@@ -46,6 +46,14 @@ int main() {
     float lastX = 1000.0f; // En son eklediğim platformun yaklaşık konumu
     sf::Clock clock;
 
+    sf::Texture heartFulltex;
+    if(!heartFulltex.loadFromFile("../assets/heart_full.png")){
+        // hata mesajı
+    }
+    sf::Sprite heartSprite;
+    heartSprite.setTexture(heartFulltex);
+    heartSprite.setScale(2.0f, 2.0f);
+
     // ---- OYUN DÖNGÜSÜ ----
     while (window.isOpen()) {
         // ** ETKİNLİK KONTROLÜ (EVENTS) **
@@ -104,6 +112,14 @@ int main() {
         }
         enemy.draw(window);
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
+
+        // CAN Görseli Çizimi
+        window.setView(window.getDefaultView()); //kamerayı ekrana sabitledim
+
+        for(int i=0; i<player.getHealth(); i++){ // can sayısı kadar kalbi yan yana dizmesi için
+            heartSprite.setPosition(20.0f + (i * 45.0f), 20.0f); // 45 pixel aralıkla dizmesi için
+            window.draw(heartSprite);
+        }
 
         window.display();
     }
