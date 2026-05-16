@@ -31,7 +31,7 @@ int main() {
 
     // ---- OYUN NESNELERİ ----
     Player player;
-    Enemy enemy(&enemyTexture, sf::Vector2f(600.0f, 400.0f), 200.0f);
+    std::vector<Enemy> enemies;
 
     std::vector<Platform> platforms;
 
@@ -44,6 +44,30 @@ int main() {
     platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), "assets/ground_dirt.png"));
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
+    
+    // DÜŞMAN 1
+    for(int i=0; i<=10; i++){
+        // düşmanı her 1200 pikselde bir koymayı deniyorum
+        float testX = 800.00f + (i * 1200.0f);
+        float testY = 490.0f; // ana zemindeki durma yüksekliği
+
+        bool platformVarMi = false;
+
+        // mevcut platform listesini taramak için
+        for(auto& platform : platforms){
+            sf::FloatRect pBounds = platform.getBounds();
+            // eğer havada asılı duran bir platformun X aralığı, benim düşman koymak istediğim X ile çakışıyorsa
+        // ve bu platform ana zemin değilse (Y koordinatı 550'den küçükse, yani havadaysa)
+            if (testX >= pBounds.left && testX <= (pBounds.left + pBounds.width) && pBounds.top < 550.0f){
+                platformVarMi = true;
+                break;
+            }
+        }
+        if(!platformVarMi){
+            enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(testX, testY), 150.0f));
+        }
+    }
+
     sf::Clock clock;
 
     // ---- CAN ARAYÜZÜ ----
@@ -68,12 +92,20 @@ int main() {
 
         // * Nesne Güncellemeleri *
         player.update(deltaTime);
-        enemy.update(deltaTime);
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
         
+
         // * ÇARPIŞMA Güncellemeri (Düşman) *
-        if(player.getBounds().intersects(enemy.getBounds())){
-            player.takeDamage();
+        for(auto it = enemies.begin(); it != enemies.end();){
+            it->update(deltaTime); // listedeki sıradaki elemanı yürütmek için
+
+            // oyuncu düşmana çarptı mı
+            if(player.getBounds().intersects(it->getBounds())){
+                player.takeDamage();
+                it = enemies.erase(it); // iç içe kalıp sürekli can kaybetmemek için düşmanı haritadan siliyorum
+                continue; // aşağıdaki it++ satırını atlayıp sonraki satıra geçecek
+            }
+            it++;
         }
 
         // * SONSUZ PLATFORM Üretimi *
@@ -113,7 +145,11 @@ int main() {
         for (auto& platform : platforms) {
             platform.draw(window);
         }
-        enemy.draw(window);
+        // listedeki her bir düşmanı ekranan tek tek çizdireceğim
+        for(auto& enemy : enemies){
+            enemy.draw(window);
+        }
+        
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
 
         // CAN Görseli Çizimi
