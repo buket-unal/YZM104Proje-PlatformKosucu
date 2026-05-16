@@ -120,42 +120,45 @@ void Player::checkCollision(std::vector<Platform>& platforms){
 
     // varsayılan olarak havada olduğunu kabul edilecek
     // aşağıda döngüde bir yere değiyorsa true yapılacak
-
     bool touchAnyPlatform = false;
 
     for(auto& platform : platforms){
         sf::FloatRect platformBounds = platform.getBounds();
 
-        // ÜSTTEN ÇARPMA
+        // eğer kesişme varsa
         if(playerBounds.intersects(platformBounds)){
-            // Üstten çarpma (Platformun üstünde durma) mantığı
-            // Karakter aşağı düşerken çarpıyorsa:
-            if(velocity.y > 0 && playerBounds.top < platformBounds.top){
-                velocity.y = 0; // düşmeyi durdur
-                shape.setPosition(playerBounds.left, platformBounds.top - playerBounds.height);
-                // buradan zıplayabilir
-                isGrounded = true;
-                touchAnyPlatform = true;     
-            }
-            // ALTTAN ÇARPMA
-            else if(velocity.y < 0 && playerBounds.top > platformBounds.top + platformBounds.height - 20.0f){
-                velocity.y = 0;
-                shape.setPosition(playerBounds.left, playerBounds.top + platformBounds.height);
-            }
-            // YANDAN ÇARPMA
-            else{
-                // sağdan çarpma
-                if(playerBounds.left + playerBounds.width < playerBounds.left + 20.0f){
-                    shape.setPosition(platformBounds.left - playerBounds.width, playerBounds.top);
+        // karakterin ve platformun merkez noktalarını bulup hangi eksende daha çok iç içe geçtiklerini hesaplamak için
+        float overlapX = std::min(playerBounds.left + playerBounds.width, platformBounds.left + platformBounds.width) - std::max(playerBounds.left, platformBounds.left);
+        float overlapY = std::min(playerBounds.top + playerBounds.height, platformBounds.top + platformBounds.height) - std::max(playerBounds.top, platformBounds.top);
+
+        // eğer yataydaki iç içe geçme daha küçükse bu bir yandan çarpmadır
+        if(overlapX < overlapY){
+            // oyuncu platformun solundaysa (sağa doğru çarpıyorsa)
+                if(playerBounds.left + playerBounds.width / 2.0f < platformBounds.left + platformBounds.width / 2.0f){
+                shape.setPosition(platformBounds.left - playerBounds.width, playerBounds.top);
                 }
-                // soldan çarpma
-                else if(playerBounds.left > platformBounds.left + platformBounds.width - 20.0f){
+            // oyuncu platformun sağındaysa (sola doğru çarpıyorsa)
+                else{
                     shape.setPosition(platformBounds.left + platformBounds.width, playerBounds.top);
                 }
+                velocity.x = 0; // yatay hızı 0 olsun ki duvar hissi versin
             }
+        // eğer dikeydeki iç içe geçme daha küçükse bu üstten veya alttan çarpmadır
+            else{
+            // üstten çarpma
+                if(velocity.y > 0 && playerBounds.top + playerBounds.height / 2.0f < platformBounds.top + platformBounds.height / 2.0f){
+                velocity.y = 0;
+                shape.setPosition(playerBounds.left, platformBounds.top - playerBounds.height);
+                isGrounded = true;
+                touchAnyPlatform = true;
+                }
+                else if(velocity.y < 0){
+                velocity.y = 0;
+                shape.setPosition(playerBounds.left, platformBounds.top + platformBounds.height);
+                }
+            }      
         }
     }
-    // eğer hiçbir platforma değmiyorsa isGrounded false kalacak
     if(!touchAnyPlatform){
         isGrounded = false;
     }
