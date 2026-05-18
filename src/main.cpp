@@ -5,6 +5,7 @@
 #include <ctime> // rastgele sayıları zamana göre değiştirmek için
 #include "Enemy.hpp"
 #include <iostream>
+#include "Coin.hpp"
 
 using namespace std;
 
@@ -17,9 +18,11 @@ int main() {
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
-    sf::Texture backgroundTexture, enemyTexture;
-    if(!backgroundTexture.loadFromFile("assets/background.png") || !enemyTexture.loadFromFile("assets/enemy.png")){
-        cout << "Arka plan veya dusman resmi yuklenemedi!" << endl;
+    sf::Texture backgroundTexture, enemyTexture, coinTexture;
+    if(!backgroundTexture.loadFromFile("assets/background.png") || 
+       !enemyTexture.loadFromFile("assets/enemy.png") ||
+        !coinTexture.loadFromFile("assets/coin.png")){
+        cout << "Gorseller yuklenemedi!" << endl;
     }
     
     backgroundTexture.setRepeated(true);
@@ -32,8 +35,8 @@ int main() {
     // ---- OYUN NESNELERİ ----
     Player player;
     std::vector<Enemy> enemies;
-
     std::vector<Platform> platforms;
+    std::vector<Coin> coins;
 
     // ÜST ÇİMLİ ZEMİN
     platforms.push_back(Platform(sf::Vector2f(9000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), "assets/ground_dirt.png"));

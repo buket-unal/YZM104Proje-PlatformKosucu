@@ -38,5 +38,7 @@ add_executable(PlatformKosucu
         src/Platform.hpp
         src/Enemy.cpp
         src/Enemy.hpp
+        src/Coin.cpp
+        src/Coin.hpp
         )
 target_link_libraries(PlatformKosucu sfml-graphics sfml-window sfml-system)
