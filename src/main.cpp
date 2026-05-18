@@ -96,16 +96,23 @@ int main() {
         
 
         // * ÇARPIŞMA Güncellemeri (Düşman) *
-        for(auto it = enemies.begin(); it != enemies.end();){
-            it->update(deltaTime); // listedeki sıradaki elemanı yürütmek için
+        // for(auto it = enemies.begin(); it != enemies.end();){
+        //     it->update(deltaTime); // listedeki sıradaki elemanı yürütmek için
 
-            // oyuncu düşmana çarptı mı
-            if(player.getBounds().intersects(it->getBounds())){
-                player.takeDamage();
-                it = enemies.erase(it); // iç içe kalıp sürekli can kaybetmemek için düşmanı haritadan siliyorum
-                continue; // aşağıdaki it++ satırını atlayıp sonraki satıra geçecek
+        //     // oyuncu düşmana çarptı mı
+        //     if(player.getBounds().intersects(it->getBounds())){
+        //         player.takeDamage();
+        //         it = enemies.erase(it); // iç içe kalıp sürekli can kaybetmemek için düşmanı haritadan siliyorum
+        //         continue; // aşağıdaki it++ satırını atlayıp sonraki satıra geçecek
+        //     }
+        //     it++;
+        // }
+        for(auto& enemy : enemies){
+            enemy.update(deltaTime);
+            //eğer oyuncu ölümsüz değilse ve düşman çarptıysa
+            if(player.getBounds().intersects(enemy.getBounds())){
+                player.takeDamage(); //kendi içinde zaten isInvincible kontrolü yapıyor
             }
-            it++;
         }
 
         // * SONSUZ PLATFORM Üretimi *

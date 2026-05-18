@@ -104,12 +104,20 @@ void Player::update(float deltaTime) {
         sprite.setOrigin(0.f, 0.f);   
     }
 
-    // ölümsüzlük efektini renkle belli etmek için
+    // ÖLÜMSÜZLÜK efektini renkle belli etmek için
     if(isInvincible){
-        sprite.setColor(sf::Color::Red); //şeffaf
+        //damageTimer'ı milisnaiyeye çevirip 150'ye bölüyorum
+        // %2 olduğunda sonuç sürekli 0 veya 1 çıkacak(hızlıca yanıp sönme hissi verecek)
+        int timeMs = static_cast<int>(damageTimer.getElapsedTime().asMilliseconds());
+
+        if((timeMs / 150) % 2 == 0){
+            sprite.setColor(sf::Color(255, 0, 0, 70)); // şeffaf hali
+        } else{
+            sprite.setColor(sf::Color(255, 255, 255, 255)); // tam görünür hali
+        }
     }
     else{
-        sprite.setColor(sf::Color::White); // Normal
+        sprite.setColor(sf::Color::White); // hasar bitince her zaman normal halinde olmsı için
     }
     
 }
