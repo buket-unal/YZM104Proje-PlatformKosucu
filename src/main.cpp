@@ -10,7 +10,8 @@
 using namespace std;
 
 int main() {
-    srand(static_cast<unsigned int>(time(0)));
+    //srand(static_cast<unsigned int>(time(0)));
+    srand(19);
 
     // ---- PENCERE VE GÖRÜNÜM AYARLARI ----
     sf::RenderWindow window(sf::VideoMode(800, 600), "Platform Kosucu");
@@ -71,6 +72,22 @@ int main() {
         }
     }
 
+    // ---- SABİT PLATFORMLARIN ÜZERİNE ALTIN YERLEŞTİRME ----
+    for(auto& platform : platforms){
+        sf::FloatRect pBounds = platform.getBounds();
+
+        // Eğer platform ana zemin değilse (Y koordinatı 550'den küçükse, yani havadaysa)
+        if(pBounds.top < 550.0f){
+            // coini platformun tam ortasına (X) ve birazcık üstüne (Y) yerleştiriyorum
+            float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+            float coinY = pBounds.top - 40.0f;
+
+            coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+        }
+    }
+
+    int score = 0; // toplanan altın sayınını tutacak
+
     sf::Clock clock;
 
     // ---- CAN ARAYÜZÜ ----
@@ -99,17 +116,6 @@ int main() {
         
 
         // * ÇARPIŞMA Güncellemeri (Düşman) *
-        // for(auto it = enemies.begin(); it != enemies.end();){
-        //     it->update(deltaTime); // listedeki sıradaki elemanı yürütmek için
-
-        //     // oyuncu düşmana çarptı mı
-        //     if(player.getBounds().intersects(it->getBounds())){
-        //         player.takeDamage();
-        //         it = enemies.erase(it); // iç içe kalıp sürekli can kaybetmemek için düşmanı haritadan siliyorum
-        //         continue; // aşağıdaki it++ satırını atlayıp sonraki satıra geçecek
-        //     }
-        //     it++;
-        // }
         for(auto& enemy : enemies){
             enemy.update(deltaTime);
             //eğer oyuncu ölümsüz değilse ve düşman çarptıysa
@@ -118,16 +124,52 @@ int main() {
             }
         }
 
+        // * ÇARPIŞMA GÜNCELLEMELERİ (Coin Toplama) *
+        for(auto& coin : coins){
+            // eğer altın daha önce toplanmadıysa ve oyuncu altına değdiyse
+            if(!coin.isCollected() && player.getBounds().intersects(coin.getBounds())){
+                coin.collect(); // altını toplandı olarak işaretleyecek
+                score++;
+                std::cout << "Coin Toplandı! Mevcut Skor: " << score << std::endl;
+            }
+        }
         // * SONSUZ PLATFORM Üretimi *
         // oyuncunun konumu + 800 (ekran genişliği), son platformun x'ini geçti mi
         
+        /*
         if(player.getPosition().x + 800.0f > lastX){
              // yeni platformun koordinatlarını belirleme
              float newX = lastX + (rand() % 200 + 200); // lastX'in üzerine 200 ile 400 arasında rastgele bir mesafe ekliyorum (zıplayabilsin diye)
              float newY = (rand() % 120 + 300);
+
              platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
+
              // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
              lastX = newX;
+         }
+             */
+
+            // * SONSUZ PLATFORM Üretimi *
+        // Oyuncu son platforma yaklaştıysa VE henüz yeni platform eklenmediyse
+        if(player.getPosition().x + 800.0f > lastX){
+             float newX = lastX + (rand() % 200 + 200); 
+             float newY = (rand() % 120 + 300);
+             
+             // lastX'i hemen güncelliyorum ki döngü bir sonraki milisaniyede buraya tekrar sızamasın!
+             lastX = newX;
+
+             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
+             
+             // %50 şansla tam bu yeni platformun üzerine 2 adet coin koymak için
+             if (rand() % 100 < 50) {
+                 float spacing = 45.0f; 
+                 float startX = newX + (150.0f - spacing - 24.0f) / 2.0f; // Platformun ortasını bulur
+                 
+                 // 1. Altın
+                 coins.push_back(Coin(&coinTexture, sf::Vector2f(startX, newY - 35.0f)));
+                 // 2. Altın (yanına)
+                 coins.push_back(Coin(&coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
+             }
          }
 
         // * KAMERA ve ARKA PLAN Pozisyonu *
@@ -160,6 +202,13 @@ int main() {
             enemy.draw(window);
         }
         
+        // coinleri çizdirme (sadece toplanmayanları çizdiriyorum)
+        for(auto& coin : coins){
+            if(!coin.isCollected()){
+                coin.draw(window);
+            }
+        }
+
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
 
         // CAN Görseli Çizimi

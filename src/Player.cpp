@@ -9,7 +9,7 @@ Player::Player() {
     // ---- GÖRSEL VE BOYUT AYARLARI ----
     isGrounded = false;
 
-    if(!texture.loadFromFile("../assets/player.png")){
+    if(!this->texture.loadFromFile("assets/player.png")){
         // resim yüklenmezse terminalde hata mesajı verecek
     }
     
@@ -75,19 +75,19 @@ void Player::update(float deltaTime) {
     // ---- ANİMASYON VE GÖRSEL MANTIK ----
     if(!isGrounded){
         // karakter havadaysa,zıplıyorsa; yürümeyi değil zıplama resmini gösterecek
-        texture.loadFromFile("../assets/player_walk.png");
+        texture.loadFromFile("assets/player_walk.png");
     }
     else if(isMoving){
         if(animationClock.getElapsedTime().asSeconds() > 0.1f){
             currentFrame = (currentFrame == 0) ? 1 : 0;
-            if(currentFrame == 0) texture.loadFromFile("../assets/player.png");
-            else texture.loadFromFile("../assets/player_walk.png");
+            if(currentFrame == 0) texture.loadFromFile("assets/player.png");
+            else texture.loadFromFile("assets/player_walk.png");
             animationClock.restart();
         }
     }
     else{
         // duruyorsa sabit durma resmi
-        texture.loadFromFile("../assets/player.png");
+        texture.loadFromFile("assets/player.png");
     }
     // texture değişmiş olabilir sprite'a buna bakmasını söylüyorum
     sprite.setTexture(texture);
