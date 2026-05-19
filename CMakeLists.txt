@@ -42,3 +42,5 @@ add_executable(PlatformKosucu
         src/Coin.hpp
         )
 target_link_libraries(PlatformKosucu sfml-graphics sfml-window sfml-system)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets"
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
