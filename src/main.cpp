@@ -58,28 +58,7 @@ int main() {
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
     
-    // DÜŞMAN 1
-    for(int i=0; i<=10; i++){
-        // düşmanı her 1200 pikselde bir koymayı deniyorum
-        float testX = 800.00f + (i * 1200.0f);
-        float testY = 490.0f; // ana zemindeki durma yüksekliği
-
-        bool platformVarMi = false;
-
-        // mevcut platform listesini taramak için
-        for(auto& platform : platforms){
-            sf::FloatRect pBounds = platform.getBounds();
-            // eğer havada asılı duran bir platformun X aralığı, benim düşman koymak istediğim X ile çakışıyorsa
-        // ve bu platform ana zemin değilse (Y koordinatı 550'den küçükse, yani havadaysa)
-            if (testX >= pBounds.left && testX <= (pBounds.left + pBounds.width) && pBounds.top < 550.0f){
-                platformVarMi = true;
-                break;
-            }
-        }
-        if(!platformVarMi){
-            enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(testX, testY), 150.0f));
-        }
-    }
+    
 
     // ---- SABİT PLATFORMLARIN ÜZERİNE ALTIN YERLEŞTİRME ----
     for(auto& platform : platforms){
@@ -143,22 +122,32 @@ int main() {
             }
         }
     
-
-            // * SONSUZ PLATFORM Üretimi *
-        // Oyuncu son platforma yaklaştıysa VE henüz yeni platform eklenmediyse
+        // * SONSUZ PLATFORM Üretimi *
         if(player.getPosition().x + 800.0f > lastX){
              float newX = lastX + (rand() % 200 + 200); 
              float newY = (rand() % 120 + 300);
              
-             // lastX'i hemen güncelliyorum ki döngü bir sonraki milisaniyede buraya tekrar sızamasın!
              lastX = newX;
 
              platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
              
-             // %50 şansla tam bu yeni platformun üzerine 2 adet coin koymak için
-             if (rand() % 100 < 50) {
+             platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), "assets/ground_dirt.png"));
+             platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), "assets/ground_dirt.png"));
+             
+             // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
+             int sans = rand() % 100;
+
+             if (sans < 50) {
+                 // %40 şansla platformun üzerine 2 adet altın koyması için
                  spawnCoins(newX, newY, coins, &coinTexture);
              }
+             else if (sans >= 50 && sans < 80) {
+                 // %30 şansla platformun üzerine bir adet devriye gezen düşman oturtmak için
+                 // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
+                 // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
+                 enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX, 490.0f), 200.0f));
+             }
+             // Geri kalan %30 şansla da platform boş kalır, oyuncu rahatça zıplar
          }
 
         // * KAMERA ve ARKA PLAN Pozisyonu *
