@@ -6,6 +6,7 @@
 #include "Enemy.hpp"
 #include <iostream>
 #include "Coin.hpp"
+#include <algorithm>
 
 using namespace std;
 
@@ -167,6 +168,31 @@ int main() {
         if(player.getPosition().y > 1000.0f){
             player.resetPosition();
         }
+
+        // ---- HAFIZA TEMİZLİĞİ ----
+        float silecekSinirX = cameraPos.x - 1000.0f;
+        //arkada kalan platformları silmek için
+        platforms.erase(
+            std::remove_if(platforms.begin(), platforms.end(), [silecekSinirX](const Platform& p){
+                return (p.getBounds().left + p.getBounds().width) < silecekSinirX;
+            }),
+            platforms.end()
+        );
+
+        enemies.erase(
+            std::remove_if(enemies.begin(), enemies.end(), [silecekSinirX](const Enemy& e) {
+                return (e.getBounds().left + e.getBounds().width) < silecekSinirX;
+            }),
+            enemies.end()
+        );
+
+        coins.erase(
+            std::remove_if(coins.begin(), coins.end(), [silecekSinirX] (const Coin& c){
+                return c.isCollected() || (c.getBounds().left + c.getBounds().width) < silecekSinirX;
+            }),
+            coins.end()
+        );
+
 
         // ---- ÇİZİM ----
         window.clear();     
