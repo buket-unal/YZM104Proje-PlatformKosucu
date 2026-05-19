@@ -5,15 +5,14 @@
 
 class Platform {
 public:
-    Platform(sf::Vector2f size, sf::Vector2f position, std::string texturePath);
+    Platform(sf::Vector2f size, sf::Vector2f position, sf::Texture* platfomTexture);
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
 
 private:
     sf::RectangleShape shape;
-    static sf::Texture texture; // Zemin resmini tutacak
-    sf::Sprite sprite; // Zemini ekrana çizecek
-
+    sf::Texture* texture; 
+    sf::Sprite sprite; 
 };
 
 #endif

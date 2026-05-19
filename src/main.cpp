@@ -28,10 +28,11 @@ int main() {
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
-    sf::Texture backgroundTexture, enemyTexture, coinTexture;
+    sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture;
     if(!backgroundTexture.loadFromFile("assets/background.png") || 
-       !enemyTexture.loadFromFile("assets/enemy.png") ||
-        !coinTexture.loadFromFile("assets/coin.png")){
+        !enemyTexture.loadFromFile("assets/enemy.png") ||
+        !coinTexture.loadFromFile("assets/coin.png") || 
+        !platformTexture.loadFromFile("assets/ground_dirt.png")){
         cout << "Gorseller yuklenemedi!" << endl;
     }
     
@@ -49,12 +50,12 @@ int main() {
     std::vector<Coin> coins;
 
     // ÜST ÇİMLİ ZEMİN
-    platforms.push_back(Platform(sf::Vector2f(9000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), "assets/ground_dirt.png"));
+    platforms.push_back(Platform(sf::Vector2f(9000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
     // ALT TOPRAK DOLGU
-    platforms.push_back(Platform(sf::Vector2f(9000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), "assets/ground_dirt.png"));
+    platforms.push_back(Platform(sf::Vector2f(9000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
     // HAVADA ASILI SABİT PLATFORMLAR
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), "assets/ground_dirt.png"));
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), "assets/ground_dirt.png"));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
     
@@ -129,11 +130,11 @@ int main() {
              
              lastX = newX;
 
-             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
+             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture));
              
-             platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), "assets/ground_dirt.png"));
-             platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), "assets/ground_dirt.png"));
-             
+             platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture));
+             platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture));
+
              // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
              int sans = rand() % 100;
 
