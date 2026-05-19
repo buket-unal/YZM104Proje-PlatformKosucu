@@ -9,6 +9,15 @@
 
 using namespace std;
 
+void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* coinTexture) {
+    float spacing = 45.0f; 
+    float startX = newX + (150.0f - spacing - 24.0f) / 2.0f; 
+    
+    // coinTexture zaten bir pointer (adres) olduğu için başına tekrar & koymuyoruz
+    coins.push_back(Coin(coinTexture, sf::Vector2f(startX, newY - 35.0f)));
+    coins.push_back(Coin(coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
+}
+
 int main() {
     //srand(static_cast<unsigned int>(time(0)));
     srand(19);
@@ -133,21 +142,7 @@ int main() {
                 std::cout << "Coin Toplandı! Mevcut Skor: " << score << std::endl;
             }
         }
-        // * SONSUZ PLATFORM Üretimi *
-        // oyuncunun konumu + 800 (ekran genişliği), son platformun x'ini geçti mi
-        
-        /*
-        if(player.getPosition().x + 800.0f > lastX){
-             // yeni platformun koordinatlarını belirleme
-             float newX = lastX + (rand() % 200 + 200); // lastX'in üzerine 200 ile 400 arasında rastgele bir mesafe ekliyorum (zıplayabilsin diye)
-             float newY = (rand() % 120 + 300);
-
-             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), "assets/ground_dirt.png"));
-
-             // lastX'i güncelliyorum ki bir sonraki platform bunun ilerisine kurulsun
-             lastX = newX;
-         }
-             */
+    
 
             // * SONSUZ PLATFORM Üretimi *
         // Oyuncu son platforma yaklaştıysa VE henüz yeni platform eklenmediyse
@@ -162,13 +157,7 @@ int main() {
              
              // %50 şansla tam bu yeni platformun üzerine 2 adet coin koymak için
              if (rand() % 100 < 50) {
-                 float spacing = 45.0f; 
-                 float startX = newX + (150.0f - spacing - 24.0f) / 2.0f; // Platformun ortasını bulur
-                 
-                 // 1. Altın
-                 coins.push_back(Coin(&coinTexture, sf::Vector2f(startX, newY - 35.0f)));
-                 // 2. Altın (yanına)
-                 coins.push_back(Coin(&coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
+                 spawnCoins(newX, newY, coins, &coinTexture);
              }
          }
 

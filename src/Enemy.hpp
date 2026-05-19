@@ -15,7 +15,7 @@ class Enemy{
 
 
 
-    private:
+    private: 
     sf::Sprite sprite;
     float speed;
     float startX; // başladığı yer (sınır kontrolü için)
