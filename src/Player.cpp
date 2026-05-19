@@ -9,13 +9,13 @@ Player::Player() {
     // ---- GÖRSEL VE BOYUT AYARLARI ----
     isGrounded = false;
 
-    if(!this->texture.loadFromFile("assets/player.png")){
-        // resim yüklenmezse terminalde hata mesajı verecek
+    if (!this->textureIdle.loadFromFile("assets/player.png") || 
+        !this->textureWalk.loadFromFile("assets/player_walk.png")) {
+        // Hata kontrolü
     }
     
     // Sprite'a bu resmi kullanmasını söylüyoruz
-    sprite.setTexture(texture);
-
+    sprite.setTexture(textureIdle);
     // resim çok küçükse (pixel art olduğu için) 2 kat büyütelim
     sprite.setScale(2.0f, 2.0f);
 
@@ -75,23 +75,23 @@ void Player::update(float deltaTime) {
     // ---- ANİMASYON VE GÖRSEL MANTIK ----
     if(!isGrounded){
         // karakter havadaysa,zıplıyorsa; yürümeyi değil zıplama resmini gösterecek
-        texture.loadFromFile("assets/player_walk.png");
+        sprite.setTexture(textureWalk);
     }
     else if(isMoving){
         if(animationClock.getElapsedTime().asSeconds() > 0.1f){
             currentFrame = (currentFrame == 0) ? 1 : 0;
-            if(currentFrame == 0) texture.loadFromFile("assets/player.png");
-            else texture.loadFromFile("assets/player_walk.png");
+            
+            if(currentFrame == 0) sprite.setTexture(textureIdle);
+            else sprite.setTexture(textureWalk);
+
             animationClock.restart();
         }
     }
     else{
         // duruyorsa sabit durma resmi
-        texture.loadFromFile("assets/player.png");
+        sprite.setTexture(textureIdle);
     }
-    // texture değişmiş olabilir sprite'a buna bakmasını söylüyorum
-    sprite.setTexture(texture);
-
+    
     // yön ayarları
     if(velocity.x > 0){ // sağa gidiyorsa
         // orijinsl resim sola baktığı için sağa giderken ayna efekti yapıyorum
