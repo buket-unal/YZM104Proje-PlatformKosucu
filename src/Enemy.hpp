@@ -22,6 +22,6 @@ class Enemy{
     float range; // ne kadar uzağa gidip dönecek
     int direction; // 1 sağ, -1 sol
 
-};
+};  
 
 #endif

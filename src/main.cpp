@@ -29,13 +29,19 @@ int main() {
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
-    sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture;
+    sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture, portalTexture;
     if(!backgroundTexture.loadFromFile("assets/background.png") || 
         !enemyTexture.loadFromFile("assets/enemy.png") ||
         !coinTexture.loadFromFile("assets/coin.png") || 
-        !platformTexture.loadFromFile("assets/ground_dirt.png")){
+        !platformTexture.loadFromFile("assets/ground_dirt.png") || 
+        !portalTexture.loadFromFile("assets/portal.png")){
         cout << "Gorseller yuklenemedi!" << endl;
     }
+
+    sf::Sprite portalSprite;
+    portalSprite.setTexture(portalTexture);
+    portalSprite.setScale(4.5f, 4.5f);
+    portalSprite.setPosition(9500.0f, 340.0f);
     
     backgroundTexture.setRepeated(true);
     sf::Sprite backgroundSprite;
@@ -51,9 +57,9 @@ int main() {
     std::vector<Coin> coins;
 
     // ÜST ÇİMLİ ZEMİN
-    platforms.push_back(Platform(sf::Vector2f(9000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(10000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
     // ALT TOPRAK DOLGU
-    platforms.push_back(Platform(sf::Vector2f(9000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(10000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
     // HAVADA ASILI SABİT PLATFORMLAR
     platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
     platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
@@ -90,6 +96,7 @@ int main() {
     heartSprite.setScale(2.0f, 2.0f);
 
     // ---- OYUN DÖNGÜSÜ ----
+    
     while (window.isOpen()) {
         // ** ETKİNLİK KONTROLÜ (EVENTS) **
         sf::Event event;
@@ -125,31 +132,33 @@ int main() {
         }
     
         // * SONSUZ PLATFORM Üretimi *
-        if(player.getPosition().x + 800.0f > lastX){
-             float newX = lastX + (rand() % 200 + 200); 
-             float newY = (rand() % 120 + 300);
+        if(lastX < 9000.0f){  // platformları hangi zemine kadar üretmeye devam edeceğini belirkemek için
+            if(player.getPosition().x + 800.0f > lastX){
+                float newX = lastX + (rand() % 200 + 200); 
+                float newY = (rand() % 120 + 300);
              
-             lastX = newX;
+                lastX = newX;
 
-             platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture));
+                platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture));
              
-             platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture));
-             platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture));
+                platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture));
+                platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture));
 
-             // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
-             int sans = rand() % 100;
-
-             if (sans < 50) {
+                // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
+                int sans = rand() % 100;
+                if (sans < 50) {
                  // %40 şansla platformun üzerine 2 adet altın koyması için
                  spawnCoins(newX, newY, coins, &coinTexture);
-             }
-             else if (sans >= 50 && sans < 80) {
+                }
+                else if (sans >= 50 && sans < 80) {
                  // %30 şansla platformun üzerine bir adet devriye gezen düşman oturtmak için
                  // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
                  // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
                  enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX, 490.0f), 200.0f));
              }
              // Geri kalan %30 şansla da platform boş kalır, oyuncu rahatça zıplar
+            }
+             
          }
 
         // * KAMERA ve ARKA PLAN Pozisyonu *
@@ -163,11 +172,45 @@ int main() {
         int offsetX = static_cast<int>(cameraPos.x * 0.1f);
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
 
-        // * Ölüm Kontrolü (Aşağı Düşme)
-        // eğer karakter çok aşağı düştüyse onu resetleyecek, başa gönderecek
+        
+        // * Ölüm Kontrolü (Aşağı Düşme ve Tam Reset) *
         if(player.getPosition().y > 1000.0f){
+            // 1. Oyuncuyu koordinat olarak başa döndür
             player.resetPosition();
+
+            // 2. Hafızadaki tüm eski, yarım yamalak silinmiş nesneleri tamamen temizle
+            platforms.clear();
+            enemies.clear();
+            coins.clear();
+
+            // 3. Rastgelelik motorunu (seed) sıfırla ki platformlar yine AYNI yerlerde doğsun
+            srand(19);
+
+            // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluştur
+            platforms.push_back(Platform(sf::Vector2f(10000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(10000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+
+            // Sabit platformların üzerine altınları yeniden yerleştir
+            for(auto& platform : platforms){
+                sf::FloatRect pBounds = platform.getBounds();
+                if(pBounds.top < 550.0f){
+                    float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+                    float coinY = pBounds.top - 40.0f;
+                    coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+                }
+            }
+
+            // 5. Üretim motorunun kaldığı yer işaretçisini de ilk günkü haline getir
+            lastX = 700.0f; 
+            
+            // 6. Skoru sıfırla (İstersen skoru sıfırlama satırını silebilirsin, canın nasıl isterse)
+            score = 0; 
+
+            std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
         }
+        
 
         // ---- HAFIZA TEMİZLİĞİ ----
         float silecekSinirX = cameraPos.x - 1000.0f;
@@ -214,6 +257,7 @@ int main() {
             }
         }
 
+        window.draw(portalSprite);
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
 
         // CAN Görseli Çizimi
