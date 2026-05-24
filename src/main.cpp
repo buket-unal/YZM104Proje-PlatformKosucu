@@ -37,12 +37,10 @@ int main() {
         !portalTexture.loadFromFile("assets/portal.png")){
         cout << "Gorseller yuklenemedi!" << endl;
     }
-
-    sf::Sprite portalSprite;
-    portalSprite.setTexture(portalTexture);
-    portalSprite.setScale(4.5f, 4.5f);
-    portalSprite.setPosition(9500.0f, 340.0f);
     
+    sf::RectangleShape portalKutusu(sf::Vector2f(250.0f, 300.0f));
+    portalKutusu.setTexture(&portalTexture);
+
     backgroundTexture.setRepeated(true);
     sf::Sprite backgroundSprite;
     backgroundSprite.setTexture(backgroundTexture);
@@ -57,16 +55,17 @@ int main() {
     std::vector<Coin> coins;
 
     // ÜST ÇİMLİ ZEMİN
-    platforms.push_back(Platform(sf::Vector2f(10000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
     // ALT TOPRAK DOLGU
-    platforms.push_back(Platform(sf::Vector2f(10000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
     // HAVADA ASILI SABİT PLATFORMLAR
     platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
     platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+    // LEVEL BİTİŞ ZEMİNİ (oyuncunun portala rahatça yürümesi için)
+    //platforms.push_back(Platform(sf::Vector2f(1000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
+
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
-    
-    
 
     // ---- SABİT PLATFORMLARIN ÜZERİNE ALTIN YERLEŞTİRME ----
     for(auto& platform : platforms){
@@ -83,6 +82,8 @@ int main() {
     }
 
     int score = 0; // toplanan altın sayınını tutacak
+    int currentLevel = 1;
+    bool isPortalSpawned = false;
 
     sf::Clock clock;
 
@@ -109,7 +110,7 @@ int main() {
 
         // * Nesne Güncellemeleri *
         player.update(deltaTime);
-        player.checkCollision(platforms); // Artık sayı değil, liste gönderiyoruz!
+        player.checkCollision(platforms); // Artık sayı değil, liste gönderiyor
         
 
         // * ÇARPIŞMA Güncellemeri (Düşman) *
@@ -130,6 +131,36 @@ int main() {
                 std::cout << "Coin Toplandı! Mevcut Skor: " << score << std::endl;
             }
         }
+
+        // * ÇARPIŞMA GÜNCELLEMELERİ (Portal / Level Geçişi) *
+        if (isPortalSpawned && player.getBounds().intersects(portalKutusu.getGlobalBounds())) {
+            currentLevel++; 
+            std::cout << "TEBRIKLER! Level " << currentLevel << " basliyor!" << std::endl;
+
+            platforms.clear();
+            enemies.clear();
+            coins.clear();
+
+            isPortalSpawned = false;
+            srand(19 + currentLevel * 10); 
+
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+
+            for(auto& platform : platforms){
+                sf::FloatRect pBounds = platform.getBounds();
+                if(pBounds.top < 550.0f){
+                    float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+                    float coinY = pBounds.top - 40.0f;
+                    coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+                }
+            }
+
+            player.resetPosition();
+            lastX = 700.0f;
+        }
     
         // * SONSUZ PLATFORM Üretimi *
         if(lastX < 9000.0f){  // platformları hangi zemine kadar üretmeye devam edeceğini belirkemek için
@@ -140,7 +171,6 @@ int main() {
                 lastX = newX;
 
                 platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture));
-             
                 platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture));
                 platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture));
 
@@ -157,9 +187,16 @@ int main() {
                  enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX, 490.0f), 200.0f));
              }
              // Geri kalan %30 şansla da platform boş kalır, oyuncu rahatça zıplar
+            }            
+        }
+
+        else{
+            if(!isPortalSpawned){
+                portalKutusu.setPosition(10400.0f, 298.0f);
+                isPortalSpawned = true;
             }
-             
-         }
+        }
+        
 
         // * KAMERA ve ARKA PLAN Pozisyonu *
         // karakterlerin konumunu alıp kamerayı oraya odaklıyoruz
@@ -175,24 +212,27 @@ int main() {
         
         // * Ölüm Kontrolü (Aşağı Düşme ve Tam Reset) *
         if(player.getPosition().y > 1000.0f){
-            // 1. Oyuncuyu koordinat olarak başa döndür
+            // 1. Oyuncuyu koordinat olarak başa döndürmek için
             player.resetPosition();
 
-            // 2. Hafızadaki tüm eski, yarım yamalak silinmiş nesneleri tamamen temizle
+            // 2. Hafızadaki tüm eski, yarım yamalak silinmiş nesneleri tamamen temizlemek için
             platforms.clear();
             enemies.clear();
             coins.clear();
 
-            // 3. Rastgelelik motorunu (seed) sıfırla ki platformlar yine AYNI yerlerde doğsun
+            // 3. Rastgelelik motorunu (seed) sıfırlıyorum ki platformlar yine AYNI yerlerde doğsun
             srand(19);
 
             // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluştur
-            platforms.push_back(Platform(sf::Vector2f(10000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(10000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+
             platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
             platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
 
-            // Sabit platformların üzerine altınları yeniden yerleştir
+            //platforms.push_back(Platform(sf::Vector2f(2000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
+            
+            // Sabit platformların üzerine altınları yeniden yerleştirmek için
             for(auto& platform : platforms){
                 sf::FloatRect pBounds = platform.getBounds();
                 if(pBounds.top < 550.0f){
@@ -202,15 +242,14 @@ int main() {
                 }
             }
 
-            // 5. Üretim motorunun kaldığı yer işaretçisini de ilk günkü haline getir
+            // 5. Üretim motorunun kaldığı yer işaretçisini de ilk günkü haline getirmek için
             lastX = 700.0f; 
-            
-            // 6. Skoru sıfırla (İstersen skoru sıfırlama satırını silebilirsin, canın nasıl isterse)
             score = 0; 
 
+            isPortalSpawned = false;
+            
             std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
         }
-        
 
         // ---- HAFIZA TEMİZLİĞİ ----
         float silecekSinirX = cameraPos.x - 1000.0f;
@@ -256,8 +295,10 @@ int main() {
                 coin.draw(window);
             }
         }
-
-        window.draw(portalSprite);
+        
+        if(isPortalSpawned){
+            window.draw(portalKutusu);
+        }
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
 
         // CAN Görseli Çizimi
