@@ -104,6 +104,31 @@ int main() {
     levelText.setFillColor(sf::Color::Yellow);
     levelText.setStyle(sf::Text::Bold);
 
+    // -------- LEVEL GEÇİŞ EKRANI DEĞİŞKENLERİ --------
+    bool isLevelCompleteScreen = false; // geçiş ekranı açık mı kontrolü
+
+    // Geçiş ekranının arkasındaki hafif şeffaf siyah panel
+    sf::RectangleShape overplayPanel(sf::Vector2f(800.0f, 600.0f));
+    overplayPanel.setFillColor(sf::Color(0, 0, 0, 130));
+
+    // Level 2'ye geçiş butonu (kutu olarak)
+    sf::RectangleShape nextLevelButton(sf::Vector2f(200.0f, 60.0f));
+    nextLevelButton.setFillColor(sf::Color(50, 205, 50)); // lime yeşili renk
+    nextLevelButton.setOrigin(100.0f, 30.0f); // butonun merkezini tam ortası yapıyorum
+    nextLevelButton.setPosition(400.0f, 400.0f); // ekranın ortasının biraz aşağısına koydum
+
+    // Butonun üzerindeki yazı
+    sf::Text buttonText;
+    buttonText.setFont(gameFont);
+    buttonText.setString("Next Level");
+    buttonText.setCharacterSize(20);
+    buttonText.setFillColor(sf::Color::White);
+    buttonText.setStyle(sf::Text::Bold);
+
+    // Yazıyı butonun tam merkezine ortalamak için matematiksel hesap
+    sf::FloatRect btnTextBounds = buttonText.getGlobalBounds();
+    buttonText.setOrigin(btnTextBounds.left + btnTextBounds.width / 2.0f, btnTextBounds.top + btnTextBounds.height / 2.0f);
+    buttonText.setPosition(400.0f, 400.0f);
 
     sf::Clock clock;
 
@@ -123,10 +148,58 @@ int main() {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
+
+            // FARE TIKLAMA KONTROLÜ (TEBRİKLER EKRANI)
+            // eğer tebrikler ekranı açıksa ve sol fare tıkı yapıldıysa
+            if(isLevelCompleteScreen && event.type == sf::Event::MouseButtonPressed){
+                if(event.mouseButton.button == sf::Mouse::Left){
+                    // farenin pencere içindeki piksel koordinatını alıyoruz
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                    // eğer tıklanan yer Next Level butonunun sınırları içindeyse gerçek level geçişini yapması için
+                    if(nextLevelButton.getGlobalBounds().contains(mousePosF)){
+                        currentLevel++;
+                        std::cout << "Butona tiklandi! Level" << currentLevel << " yukleniyor..." << std::endl;
+
+                        player.resetPosition();
+                        player.setHealth(5);
+
+                        platforms.clear();
+                        enemies.clear();
+                        coins.clear();
+
+                        isPortalSpawned = false;
+                        isLevelCompleteScreen = false; // tebrikler ekranını kapatıp oyunu devam ettirmesi için
+
+                        srand(19 + currentLevel * 15);
+
+                        // yeni level haritası
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+
+                        for(auto& platform : platforms){
+                            sf::FloatRect pBounds = platform.getBounds();
+                            if(pBounds.top < 550.0f){
+                                float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+                                float coinY = pBounds.top - 40.0f;
+                                coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+                            }
+                        }
+                        lastX = 700.0f;
+                        score = 0; 
+                    }   
+                }
+            }
         }
+     
 
         // ** GÜNCELLEME **
         float deltaTime = clock.restart().asSeconds(); // zamanı başlattım
+
+        if(!isLevelCompleteScreen){
 
         // * Nesne Güncellemeleri *
         player.update(deltaTime);
@@ -153,39 +226,10 @@ int main() {
         }
 
         // * ÇARPIŞMA GÜNCELLEMELERİ (Portal / Level Geçişi) *
-        if (isPortalSpawned && player.getBounds().intersects(portalKutusu.getGlobalBounds())) {
-            currentLevel++; 
-            std::cout << "TEBRIKLER! Level " << currentLevel << " basliyor!" << std::endl;
-
-            player.resetPosition(); // oyuncuyu başa yolluyorum
-            player.setHealth(5);
-            // hafızayı temizliyorum
-            platforms.clear();
-            enemies.clear();
-            coins.clear();
-            //skoru ve portal durumunu sıfırlıyorum
-            score = 0;
-            isPortalSpawned = false;
-
-            // rastgeleleik motoruna yeni leveli verdim
-            srand(19 + currentLevel * 15); 
-
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
-
-            // sabit platformların üzerine altınları koyuyorum
-            for(auto& platform : platforms){
-                sf::FloatRect pBounds = platform.getBounds();
-                if(pBounds.top < 550.0f){
-                    float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-                    float coinY = pBounds.top - 40.0f;
-                    coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
-                }
-            }
-            // üretim noktasını başa sarıyorum
-            lastX = 700.0f;
+        // Eğer tebrikler ekranı halihazırda açık değilse, portal doğduysa ve oyuncu değdiyse ekranı tetikle
+        if (!isLevelCompleteScreen && isPortalSpawned && player.getBounds().intersects(portalKutusu.getGlobalBounds())) {
+            isLevelCompleteScreen = true; // Oyunu durdurma sinyalini yak ve ekranı aç!
+            std::cout << "Portal tetiklendi! Tebrikler ekrani aciliyor." << std::endl;
         }
     
         // * SONSUZ PLATFORM Üretimi *
@@ -273,10 +317,13 @@ int main() {
             score = 0; 
 
             isPortalSpawned = false;
+
+            currentLevel = 1;
+            isLevelCompleteScreen = false;
             
             std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
         }
-
+    
         // ---- HAFIZA TEMİZLİĞİ ----
         float silecekSinirX = cameraPos.x - 1000.0f;
         //arkada kalan platformları silmek için
@@ -300,7 +347,17 @@ int main() {
             }),
             coins.end()
         );
+        }   
 
+        view.setCenter(player.getPosition().x, 300);
+        window.setView(view);
+
+        sf::Vector2f cameraPos = view.getCenter() - (view.getSize() / 2.0f); 
+        backgroundSprite.setPosition(cameraPos.x, cameraPos.y); 
+        
+        int offsetX = static_cast<int>(cameraPos.x * 0.1f);
+        backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
+        
 
         // ---- ÇİZİM ----
         window.clear();     
@@ -344,6 +401,25 @@ int main() {
         for(int i=0; i<player.getHealth(); i++){ 
             heartSprite.setPosition(20.0f + (i * 45.0f), 20.0f); 
             window.draw(heartSprite);
+        }
+
+        if (isLevelCompleteScreen) {
+            window.setView(window.getDefaultView()); 
+
+            //overplayPanel.setPosition(0.0f, 0.0f);
+
+            window.draw(overplayPanel);   
+            window.draw(nextLevelButton); 
+            window.draw(buttonText);      
+            
+            sf::Text congratsText;
+            congratsText.setFont(gameFont);
+            congratsText.setString("CONGRATS!\nYou have completed level " + to_string(currentLevel) + "\nTotal Score: " + to_string(score));
+            congratsText.setCharacterSize(30);
+            congratsText.setFillColor(sf::Color::Yellow);
+            congratsText.setStyle(sf::Text::Bold);
+            congratsText.setPosition(250.0f, 200.0f);
+            window.draw(congratsText);
         }
 
         window.display();
