@@ -19,6 +19,9 @@ class Player {
     int getHealth() const {
         return health; //oyuncunun kaç canı kaldığını bilmesi için 
     }
+    void setHealth(int h){
+        health = h;
+    }
 
     private:
     sf::RectangleShape shape;

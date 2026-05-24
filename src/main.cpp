@@ -20,7 +20,6 @@ void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* c
 }
 
 int main() {
-    //srand(static_cast<unsigned int>(time(0)));
     srand(19);
 
     // ---- PENCERE VE GÖRÜNÜM AYARLARI ----
@@ -85,6 +84,27 @@ int main() {
     int currentLevel = 1;
     bool isPortalSpawned = false;
 
+    // -------- FONT VE YAZI AYARLARI --------
+    sf::Font gameFont;
+    if(!gameFont.loadFromFile("assets/arial.ttf")){
+        std::cout << "Font yuklenemedi! assets/arial.ttf dosyasini kontrol edin. " << std::endl;
+    }
+
+    // SKOR Yazısı Ayarları
+    sf::Text scoreText;
+    scoreText.setFont(gameFont);
+    scoreText.setCharacterSize(22);
+    scoreText.setFillColor(sf::Color::White);
+    scoreText.setStyle(sf::Text::Bold);
+
+    // LEVEL Yazısı Ayarları
+    sf::Text levelText;
+    levelText.setFont(gameFont);
+    levelText.setCharacterSize(22);
+    levelText.setFillColor(sf::Color::Yellow);
+    levelText.setStyle(sf::Text::Bold);
+
+
     sf::Clock clock;
 
     // ---- CAN ARAYÜZÜ ----
@@ -137,18 +157,25 @@ int main() {
             currentLevel++; 
             std::cout << "TEBRIKLER! Level " << currentLevel << " basliyor!" << std::endl;
 
+            player.resetPosition(); // oyuncuyu başa yolluyorum
+            player.setHealth(5);
+            // hafızayı temizliyorum
             platforms.clear();
             enemies.clear();
             coins.clear();
-
+            //skoru ve portal durumunu sıfırlıyorum
+            score = 0;
             isPortalSpawned = false;
-            srand(19 + currentLevel * 10); 
+
+            // rastgeleleik motoruna yeni leveli verdim
+            srand(19 + currentLevel * 15); 
 
             platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
             platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
             platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
             platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
 
+            // sabit platformların üzerine altınları koyuyorum
             for(auto& platform : platforms){
                 sf::FloatRect pBounds = platform.getBounds();
                 if(pBounds.top < 550.0f){
@@ -157,8 +184,7 @@ int main() {
                     coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
                 }
             }
-
-            player.resetPosition();
+            // üretim noktasını başa sarıyorum
             lastX = 700.0f;
         }
     
@@ -301,11 +327,22 @@ int main() {
         }
         player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
 
-        // CAN Görseli Çizimi
-        window.setView(window.getDefaultView()); //kamerayı ekrana sabitledim
+        // CAN Görseli Çizimi ve Sabir Ekran Ayarı
+        window.setView(window.getDefaultView());
 
-        for(int i=0; i<player.getHealth(); i++){ // can sayısı kadar kalbi yan yana dizmesi için
-            heartSprite.setPosition(20.0f + (i * 45.0f), 20.0f); // 45 pixel aralıkla dizmesi için
+        // YAZILARI ÇİZDİRME
+        // Skor yazısını dinamik skor değişkenine bağlayıp kalplerin sağ tarafına (280, 20) koyuyorum
+        scoreText.setString("Skor: " + std::to_string(score));
+        scoreText.setPosition(280.0f, 20.0f);
+        window.draw(scoreText);
+
+        // Level yazısını dinamik level değişkenine bağlayıp skorun hemen yanına (420, 20) koyuyorum
+        levelText.setString("Level: " + std::to_string(currentLevel));
+        levelText.setPosition(420.0f, 20.0f);
+        window.draw(levelText);
+
+        for(int i=0; i<player.getHealth(); i++){ 
+            heartSprite.setPosition(20.0f + (i * 45.0f), 20.0f); 
             window.draw(heartSprite);
         }
 
