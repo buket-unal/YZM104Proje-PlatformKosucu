@@ -38,6 +38,13 @@ int main() {
         cout << "Gorseller yuklenemedi!" << endl;
     }
 
+    // ---- LEVEL 2 GECE ARKA PLANI YÜKLEME ----
+    sf::Texture backgroundNightTexture;
+    if(!backgroundNightTexture.loadFromFile("assets/level2/background_night.png")){
+        std::cout << "Gorsel yuklenemedi!" << std::endl;
+    }
+    backgroundNightTexture.setRepeated(true);
+
     // ---- LEVEL 2 FLYINGENEMY GÖRSELLERİ ---- 
     sf::Texture flyingEnemyOpenTexture;
     sf::Texture flyingEnemyClosedTexture;
@@ -475,8 +482,18 @@ int main() {
 
         // ---- ÇİZİM ----
         window.clear();     
-        
-        window.draw(backgroundSprite); // gökyüzünü çizdirdik
+
+        // ---- GÖKYÜZÜ GÖRSEL YÖNETİMİ ----
+        if(currentLevel >= 2){
+            backgroundSprite.setTexture(backgroundNightTexture);
+            backgroundSprite.setColor(sf::Color::White);
+        }
+        else{
+            backgroundSprite.setTexture(backgroundTexture);
+            backgroundSprite.setColor(sf::Color::White);
+        }
+        window.draw(backgroundSprite); // gökyüzünü çizdirdim
+
         // platformları çizdiriyorum (Döngü ile listedeki her şeyi ekrana basacak)
         for (auto& platform : platforms) {
             platform.draw(window);
