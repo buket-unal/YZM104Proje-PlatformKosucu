@@ -41,8 +41,8 @@ int main() {
     portalKutusu.setTexture(&portalTexture);
 
     // Sadece çarpışmayı algılayacak görünmez dar hitbox (Genişlik: 40, Yükseklik: 200)
-sf::RectangleShape portalHitbox(sf::Vector2f(40.0f, 200.0f));
-portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyorum
+    sf::RectangleShape portalHitbox(sf::Vector2f(40.0f, 200.0f));
+    portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyorum
 
     backgroundTexture.setRepeated(true);
     sf::Sprite backgroundSprite;
@@ -134,6 +134,32 @@ portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyo
     buttonText.setOrigin(btnTextBounds.left + btnTextBounds.width / 2.0f, btnTextBounds.top + btnTextBounds.height / 2.0f);
     buttonText.setPosition(400.0f, 400.0f);
 
+    // -------- GAME OVER EKRANI DEĞİŞKENLERİ --------
+    bool isGameOverScreen = false; // Game over ekranı açık mı kontrolü
+
+    // Game Over ekranının arkasındaki hafif şeffaf kırmızı/siyah panel
+    sf::RectangleShape gameOverOverlay(sf::Vector2f(800.0f, 600.0f));
+    gameOverOverlay.setFillColor(sf::Color(40, 0, 0, 180)); // Koyu şeffaf kırmızı bir ton
+
+    // Try Again butonu (kutu olarak)
+    sf::RectangleShape tryAgainButton(sf::Vector2f(200.0f, 60.0f));
+    tryAgainButton.setFillColor(sf::Color(220, 20, 60)); // Crimson kırmızısı renk
+    tryAgainButton.setOrigin(100.0f, 30.0f); // Butonun merkezini tam ortası yapıyorum
+    tryAgainButton.setPosition(400.0f, 400.0f); // Ekranın ortasının biraz aşağısına koydum
+
+    // Butonun üzerindeki yazı
+    sf::Text tryAgainText;
+    tryAgainText.setFont(gameFont);
+    tryAgainText.setString("Try Again");
+    tryAgainText.setCharacterSize(20);
+    tryAgainText.setFillColor(sf::Color::White);
+    tryAgainText.setStyle(sf::Text::Bold);
+
+    // Yazıyı butonun tam merkezine ortalamak için matematiksel hesap
+    sf::FloatRect tryAgainTextBounds = tryAgainText.getGlobalBounds();
+    tryAgainText.setOrigin(tryAgainTextBounds.left + tryAgainTextBounds.width / 2.0f, tryAgainTextBounds.top + tryAgainTextBounds.height / 2.0f);
+    tryAgainText.setPosition(400.0f, 400.0f);
+
     sf::Clock clock;
 
     // ---- CAN ARAYÜZÜ ----
@@ -197,13 +223,65 @@ portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyo
                     }   
                 }
             }
+            // FARE TIKLAMA KONTROLÜ (GAME OVER EKRANI)
+            if(isGameOverScreen && event.type == sf::Event::MouseButtonPressed){
+                if(event.mouseButton.button == sf::Mouse::Left){
+                    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                    sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                    // Eğer Try Again butonuna tıklandıysa her şeyi sıfırla
+                    if(tryAgainButton.getGlobalBounds().contains(mousePosF)){
+                        std::cout << "Try Again butonuna tiklandi! Oyun bastan basliyor..." << std::endl;
+
+                        // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
+                        player.resetPosition();
+                        player.setHealth(5);
+
+                        // 2. Hafızayı temizle
+                        platforms.clear();
+                        enemies.clear();
+                        coins.clear();
+
+                        // 3. Harita motorunu (seed) ilk günkü haline getir
+                        srand(19);
+
+                        // 4. İlk bölüm zeminlerini yeniden oluştur
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+
+                        for(auto& platform : platforms){
+                            sf::FloatRect pBounds = platform.getBounds();
+                            if(pBounds.top < 550.0f){
+                                float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+                                float coinY = pBounds.top - 40.0f;
+                                coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+                            }
+                        }
+
+                        // 5. Değişkenleri sıfırla ve ekranı kapat
+                        lastX = 700.0f; 
+                        score = 0; 
+                        currentLevel = 1;
+                        isPortalSpawned = false;
+                        isGameOverScreen = false; // Ekranı kapatıp oyunu başlat
+                    }
+                }
+            }
         }
      
 
         // ** GÜNCELLEME **
         float deltaTime = clock.restart().asSeconds(); // zamanı başlattım
 
-        if(!isLevelCompleteScreen){
+        if(!isLevelCompleteScreen && !isGameOverScreen){
+
+            // Oyuncunun canı bittiyse Game Over ekranını tetiklemesi için
+            if(player.getHealth() <= 0){
+                isGameOverScreen = true;
+                std::cout << "Oyuncunun cani bitti! GAME OVER." << std::endl;
+            }
 
         // * Nesne Güncellemeleri *
         player.update(deltaTime);
@@ -426,6 +504,26 @@ portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyo
             congratsText.setStyle(sf::Text::Bold);
             congratsText.setPosition(250.0f, 200.0f);
             window.draw(congratsText);
+        }
+
+        // GAME OVER EKRANI ÇİZİMİ
+        if (isGameOverScreen) {
+            window.setView(window.getDefaultView()); // Arayüzü ekrana sabitlemek için
+
+            window.draw(gameOverOverlay);   // Koyu kırmızı arka plan paneli
+            window.draw(tryAgainButton);    // Yeniden dene butonu
+            window.draw(tryAgainText);      // Buton yazısı
+            
+            sf::Text gameOverText;
+            gameOverText.setFont(gameFont);
+            gameOverText.setString("GAME OVER\nYour journey ended at Level " + to_string(currentLevel));
+            gameOverText.setCharacterSize(35);
+            gameOverText.setFillColor(sf::Color::White);
+            gameOverText.setStyle(sf::Text::Bold);
+            
+            // Yazıyı ekrana ortalamak için
+            gameOverText.setPosition(220.0f, 200.0f);
+            window.draw(gameOverText);
         }
 
         window.display();
