@@ -61,19 +61,24 @@ int main() {
     // arka planı çok geniş bir dikdörtgen olarak ayarladım
     backgroundSprite.setTextureRect(sf::IntRect(0, 0, 1600, 600));
 
-    // ---- OYUN NESNELERİ ----
+    int score = 0; // toplanan altın sayınını tutacak
+    int currentLevel = 1;
+    bool isPortalSpawned = false;
+
+    // ------------ OYUN NESNELERİ ------------
     Player player;
     std::vector<Enemy> enemies;
     std::vector<Platform> platforms;
     std::vector<Coin> coins;
+    std::vector<FlyingEnemy> flyingEnemies;
 
     // ÜST ÇİMLİ ZEMİN
-    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
     // ALT TOPRAK DOLGU
-    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
     // HAVADA ASILI SABİT PLATFORMLAR
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
+    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
     // LEVEL BİTİŞ ZEMİNİ (oyuncunun portala rahatça yürümesi için)
     //platforms.push_back(Platform(sf::Vector2f(1000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
 
@@ -94,9 +99,6 @@ int main() {
         }
     }
 
-    int score = 0; // toplanan altın sayınını tutacak
-    int currentLevel = 1;
-    bool isPortalSpawned = false;
 
     // -------- FONT VE YAZI AYARLARI --------
     sf::Font gameFont;
@@ -181,8 +183,7 @@ int main() {
     heartSprite.setTexture(heartFulltex);
     heartSprite.setScale(2.0f, 2.0f);
 
-    // ---- OYUN DÖNGÜSÜ ----
-    
+    // ---------------------------------- OYUN DÖNGÜSÜ ----------------------------------   
     while (window.isOpen()) {
         // ** ETKİNLİK KONTROLÜ (EVENTS) **
         sf::Event event;
@@ -208,6 +209,7 @@ int main() {
                         platforms.clear();
                         enemies.clear();
                         coins.clear();
+                        flyingEnemies.clear();
 
                         isPortalSpawned = false;
                         isLevelCompleteScreen = false; // tebrikler ekranını kapatıp oyunu devam ettirmesi için
@@ -215,10 +217,10 @@ int main() {
                         srand(19 + currentLevel * 15);
 
                         // yeni level haritası
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
 
                         for(auto& platform : platforms){
                             sf::FloatRect pBounds = platform.getBounds();
@@ -256,10 +258,10 @@ int main() {
                         srand(19);
 
                         // 4. İlk bölüm zeminlerini yeniden oluştur
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
+                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
 
                         for(auto& platform : platforms){
                             sf::FloatRect pBounds = platform.getBounds();
@@ -298,12 +300,19 @@ int main() {
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyor
         
 
-        // * ÇARPIŞMA Güncellemeri (Düşman) *
+        // * ÇARPIŞMA Güncellemeri (Düşmanlar) *
         for(auto& enemy : enemies){
             enemy.update(deltaTime);
             //eğer oyuncu ölümsüz değilse ve düşman çarptıysa
             if(player.getBounds().intersects(enemy.getBounds())){
                 player.takeDamage(); //kendi içinde zaten isInvincible kontrolü yapıyor
+            }
+        }
+        for(auto& fEnemy : flyingEnemies){
+            fEnemy.update(deltaTime); // yarasanın kendi içindeki sinüs dalgasını ve kanat çırpışını oynatması için
+            // eğer oyuncu yarasaya çarparsa hasar alması için
+            if(player.getBounds().intersects(fEnemy.getBounds())){
+                player.takeDamage();
             }
         }
 
@@ -332,14 +341,14 @@ int main() {
              
                 lastX = newX;
 
-                platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture));
-                platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture));
-                platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture));
+                platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
+                platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture, currentLevel));
+                platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture, currentLevel));
 
                 // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
                 int sans = rand() % 100;
                 if (sans < 50) {
-                 // %40 şansla platformun üzerine 2 adet altın koyması için
+                 // %50 şansla platformun üzerine 2 adet altın koyması için
                  spawnCoins(newX, newY, coins, &coinTexture);
                 }
                 else if (sans >= 50 && sans < 80) {
@@ -350,6 +359,10 @@ int main() {
                  enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
              }
              // Geri kalan %20 şansla da platform boş kalır, oyuncu rahatça zıplar
+
+             if(currentLevel >= 2 && (rand() % 100) < 30){
+                flyingEnemies.push_back(FlyingEnemy(&flyingEnemyOpenTexture, &flyingEnemyClosedTexture, sf::Vector2f(newX + 75.0f, newY - 120.0f), 40.0f));
+             }
             }            
         }
 
@@ -388,11 +401,11 @@ int main() {
             srand(19);
 
             // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluştur
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
+            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
 
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture));
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
+            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
 
             //platforms.push_back(Platform(sf::Vector2f(2000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
             
@@ -441,7 +454,14 @@ int main() {
             }),
             coins.end()
         );
-        }   
+
+        flyingEnemies.erase(
+            std::remove_if(flyingEnemies.begin(), flyingEnemies.end(), [silecekSinirX] (const FlyingEnemy fEnemy){
+                return (fEnemy.getBounds().left + fEnemy.getBounds().width) < silecekSinirX;
+            }),
+            flyingEnemies.end()
+        );
+    }  
 
         view.setCenter(player.getPosition().x, 300);
         window.setView(view);
@@ -465,7 +485,9 @@ int main() {
         for(auto& enemy : enemies){
             enemy.draw(window);
         }
-        
+        for(auto& fEnemy : flyingEnemies){
+            fEnemy.draw(window);
+        }
         // coinleri çizdirme (sadece toplanmayanları çizdiriyorum)
         for(auto& coin : coins){
             if(!coin.isCollected()){
