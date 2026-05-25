@@ -44,8 +44,16 @@ void Player::update(float deltaTime) {
         }
     }
 
+    // KRİTİK DÜZELTME: Hasar alındıktan sonraki ilk 0.2 saniye boyunca
+    // klavye girdilerini tamamen engelliyorum (Knockback Kilitlenmesi)
+
     if(isInvincible && damageTimer.getElapsedTime().asSeconds() < 0.2f){
-        //klavye kontrolünü atlıyorum mevcut velocity korunsun
+        // Yer çekimini fırlama hızına uygulamaya devam etmek için hareketi işletiyorum
+        velocity.y += gravity * 60.0f; 
+        shape.move(velocity * deltaTime); 
+        sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y - 8.0f); // -8.0f zemine sıfır 
+
+        return;
     }
     else{
         velocity.x = 0;
