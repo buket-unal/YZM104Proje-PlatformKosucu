@@ -222,7 +222,7 @@ int main() {
                         isLevelCompleteScreen = false; // tebrikler ekranını kapatıp oyunu devam ettirmesi için
 
                         srand(19 + currentLevel * 15);
-
+          
                         // yeni level haritası
                         platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
                         platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
@@ -260,6 +260,9 @@ int main() {
                         platforms.clear();
                         enemies.clear();
                         coins.clear();
+                        flyingEnemies.clear();
+
+                        currentLevel = 1;
 
                         // 3. Harita motorunu (seed) ilk günkü haline getir
                         srand(19);
@@ -282,7 +285,6 @@ int main() {
                         // 5. Değişkenleri sıfırla ve ekranı kapat
                         lastX = 700.0f; 
                         score = 0; 
-                        currentLevel = 1;
                         isPortalSpawned = false;
                         isGameOverScreen = false; // Ekranı kapatıp oyunu başlat
                     }
@@ -403,6 +405,9 @@ int main() {
             platforms.clear();
             enemies.clear();
             coins.clear();
+            flyingEnemies.clear();
+
+            currentLevel = 1;
 
             // 3. Rastgelelik motorunu (seed) sıfırlıyorum ki platformlar yine AYNI yerlerde doğsun
             srand(19);
@@ -431,8 +436,6 @@ int main() {
             score = 0; 
 
             isPortalSpawned = false;
-
-            currentLevel = 1;
             isLevelCompleteScreen = false;
             
             std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
