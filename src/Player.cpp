@@ -70,7 +70,7 @@ void Player::update(float deltaTime) {
     velocity.y += gravity * 60.0f; // yer çekimi
     shape.move(velocity * deltaTime); // hareket uygulama
     // görselin, görünmez çarpışma kutusunu (shape) takip etmesini sağlayacak
-    sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y -15);
+    sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y - 8.0f);
 
     // ---- ANİMASYON VE GÖRSEL MANTIK ----
     if(!isGrounded){

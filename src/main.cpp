@@ -40,6 +40,10 @@ int main() {
     sf::RectangleShape portalKutusu(sf::Vector2f(250.0f, 300.0f));
     portalKutusu.setTexture(&portalTexture);
 
+    // Sadece çarpışmayı algılayacak görünmez dar hitbox (Genişlik: 40, Yükseklik: 200)
+sf::RectangleShape portalHitbox(sf::Vector2f(40.0f, 200.0f));
+portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyorum
+
     backgroundTexture.setRepeated(true);
     sf::Sprite backgroundSprite;
     backgroundSprite.setTexture(backgroundTexture);
@@ -227,7 +231,7 @@ int main() {
 
         // * ÇARPIŞMA GÜNCELLEMELERİ (Portal / Level Geçişi) *
         // Eğer tebrikler ekranı halihazırda açık değilse, portal doğduysa ve oyuncu değdiyse ekranı tetikle
-        if (!isLevelCompleteScreen && isPortalSpawned && player.getBounds().intersects(portalKutusu.getGlobalBounds())) {
+        if (!isLevelCompleteScreen && isPortalSpawned && player.getBounds().intersects(portalHitbox.getGlobalBounds())) {
             isLevelCompleteScreen = true; // Oyunu durdurma sinyalini yak ve ekranı aç!
             std::cout << "Portal tetiklendi! Tebrikler ekrani aciliyor." << std::endl;
         }
@@ -254,15 +258,17 @@ int main() {
                  // %30 şansla platformun üzerine bir adet devriye gezen düşman oturtmak için
                  // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
                  // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
-                 enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX, 490.0f), 200.0f));
+                 float groundEnemyY = 550.0f;
+                 enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
              }
-             // Geri kalan %30 şansla da platform boş kalır, oyuncu rahatça zıplar
+             // Geri kalan %20 şansla da platform boş kalır, oyuncu rahatça zıplar
             }            
         }
 
         else{
             if(!isPortalSpawned){
                 portalKutusu.setPosition(10400.0f, 298.0f);
+                portalHitbox.setPosition(10400.0f + 105.0f, 350.0f);
                 isPortalSpawned = true;
             }
         }
