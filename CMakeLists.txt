@@ -40,6 +40,8 @@ add_executable(PlatformKosucu
         src/Enemy.hpp
         src/Coin.cpp
         src/Coin.hpp
+        src/FlyingEnemy.cpp
+        src/FlyingEnemy.hpp
         )
 target_link_libraries(PlatformKosucu sfml-graphics sfml-window sfml-system)
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets"
