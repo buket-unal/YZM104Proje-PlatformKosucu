@@ -7,6 +7,7 @@
 #include <iostream>
 #include "Coin.hpp"
 #include <algorithm>
+#include "FlyingEnemy.hpp"
 
 using namespace std;
 
@@ -36,6 +37,15 @@ int main() {
         !portalTexture.loadFromFile("assets/portal.png")){
         cout << "Gorseller yuklenemedi!" << endl;
     }
+
+    // ---- LEVEL 2 FLYINGENEMY GÖRSELLERİ ---- 
+    sf::Texture flyingEnemyOpenTexture;
+    sf::Texture flyingEnemyClosedTexture;
+
+    if(!flyingEnemyOpenTexture.loadFromFile("assets/level2/flying_enemy_open.png") ||
+        !flyingEnemyClosedTexture.loadFromFile("assets/level2/flying_enemy_closed.png")){
+            std::cout << "Gorseller yuklenemedi!" << std::endl;
+        }
     
     sf::RectangleShape portalKutusu(sf::Vector2f(250.0f, 300.0f));
     portalKutusu.setTexture(&portalTexture);
