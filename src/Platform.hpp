@@ -13,6 +13,7 @@ private:
     sf::RectangleShape shape;
     sf::Texture* texture; 
     sf::Sprite sprite; 
+    int currentLevel;
 };
 
 #endif

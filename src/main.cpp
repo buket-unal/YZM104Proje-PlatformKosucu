@@ -54,6 +54,19 @@ int main() {
             std::cout << "Gorseller yuklenemedi!" << std::endl;
         }
     
+    // ---- LEVEL 3 MAĞARA VE ASİT GÖRSELLERİ YÜKLEME ----
+    sf::Texture backgroundCaveTexture;
+    if(!backgroundCaveTexture.loadFromFile("assets/level3/background_cave.png")){
+        std::cout << "Gorseller yuklenemedi!" << std::endl;
+    }   
+    backgroundCaveTexture.setRepeated(true);
+    
+    sf::Texture acidTexture;
+    if(!acidTexture.loadFromFile("assets/level3/hazard_liquid.png")){
+        std::cout << "Gorseller yuklenemedi!" << std::endl;
+    }
+    acidTexture.setRepeated(true);
+
     sf::RectangleShape portalKutusu(sf::Vector2f(250.0f, 300.0f));
     portalKutusu.setTexture(&portalTexture);
 
@@ -78,6 +91,7 @@ int main() {
     std::vector<Platform> platforms;
     std::vector<Coin> coins;
     std::vector<FlyingEnemy> flyingEnemies;
+    std::vector<sf::RectangleShape> acidHazards;
 
     // ÜST ÇİMLİ ZEMİN
     platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
@@ -217,6 +231,7 @@ int main() {
                         enemies.clear();
                         coins.clear();
                         flyingEnemies.clear();
+                        acidHazards.clear();
 
                         isPortalSpawned = false;
                         isLevelCompleteScreen = false; // tebrikler ekranını kapatıp oyunu devam ettirmesi için
@@ -261,6 +276,7 @@ int main() {
                         enemies.clear();
                         coins.clear();
                         flyingEnemies.clear();
+                        acidHazards.clear();
 
                         currentLevel = 1;
 
@@ -350,10 +366,27 @@ int main() {
              
                 lastX = newX;
 
-                platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
-                platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture, currentLevel));
-                platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture, currentLevel));
+                // ---- LEVEL 3 ÇUKUR VE ASİT MEKANİĞİ ----
+                // eğer level 3 ise %25 şans ile zemin üretmeyip çukur açması için
+                if(currentLevel >= 3 && (rand() % 100 < 25)){
 
+                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
+
+                    sf::RectangleShape acidBlock(sf::Vector2f(400.0f, 45.0f));
+                    acidBlock.setPosition(newX, 565.0f);
+                    acidBlock.setTexture(&acidTexture);
+
+                    acidBlock.setFillColor(sf::Color(50, 255, 50)); //kodla yeşile boyadım
+
+                    acidHazards.push_back(acidBlock);
+
+                }
+                else{
+                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture, currentLevel));
+                }
+                
                 // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
                 int sans = rand() % 100;
                 if (sans < 50) {
@@ -406,6 +439,7 @@ int main() {
             enemies.clear();
             coins.clear();
             flyingEnemies.clear();
+            acidHazards.clear();
 
             currentLevel = 1;
 
@@ -486,9 +520,13 @@ int main() {
         // ---- ÇİZİM ----
         window.clear();     
 
-        // ---- GÖKYÜZÜ GÖRSEL YÖNETİMİ ----
-        if(currentLevel >= 2){
+        // ---- ARKA PLAN GÖRSEL YÖNETİMİ ----
+        if(currentLevel = 2){
             backgroundSprite.setTexture(backgroundNightTexture);
+            backgroundSprite.setColor(sf::Color::White);
+        }
+        else if(currentLevel >= 3){
+            backgroundSprite.setTexture(backgroundCaveTexture);
             backgroundSprite.setColor(sf::Color::White);
         }
         else{
