@@ -92,6 +92,7 @@ int main() {
     std::vector<Coin> coins;
     std::vector<FlyingEnemy> flyingEnemies;
     std::vector<sf::RectangleShape> acidHazards;
+    std::vector<sf::RectangleShape> acidFills;
 
     // ÜST ÇİMLİ ZEMİN
     platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
@@ -350,6 +351,31 @@ int main() {
                 std::cout << "Coin Toplandı! Mevcut Skor: " << score << std::endl;
             }
         }
+        
+        // * ÇARPIŞMA GÜNCELLEMELERİ (Level 3 Asit Hasarı) *
+        if(currentLevel >= 3){
+            // asitlerin sinüs dalgasıyla sallanması
+            static float acidTime = 0.0f;
+            acidTime += 0.05f;
+
+            for(auto& acid : acidHazards){
+                sf::Vector2f pos = acid.getPosition();
+                pos.y = 545.0f + std::sin(acidTime) * 2.0f;
+                acid.setPosition(pos);
+            }
+            for(auto& fill : acidFills){
+                sf::Vector2f pos = fill.getPosition();
+                pos.y = 575.0f + std::sin(acidTime) * 2.0f;
+                fill.setPosition(pos);
+            }
+
+            for(auto& acid : acidHazards){
+                if(player.getBounds().intersects(acid.getGlobalBounds())){
+                    player.takeDamage();
+                    std::cout << "⚠️ Oyuncu aside basti! Cani azaliyor." << std::endl;
+                }
+            }
+        }
 
         // * ÇARPIŞMA GÜNCELLEMELERİ (Portal / Level Geçişi) *
         // Eğer tebrikler ekranı halihazırda açık değilse, portal doğduysa ve oyuncu değdiyse ekranı tetikle
@@ -367,24 +393,30 @@ int main() {
                 lastX = newX;
 
                 // ---- LEVEL 3 ÇUKUR VE ASİT MEKANİĞİ ----
-                // eğer level 3 ise %25 şans ile zemin üretmeyip çukur açması için
-                if(currentLevel >= 3 && (rand() % 100 < 25)){
+                // eğer level 3 ise %35 şans ile zemin üretmeyip çukur açması için
+                if(currentLevel >= 3 && (rand() % 100 < 35)){
 
                     platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
 
-                    sf::RectangleShape acidBlock(sf::Vector2f(400.0f, 45.0f));
+                    // ASİT YÜZEYİ
+                    sf::RectangleShape acidBlock(sf::Vector2f(150.0f, 45.0f));
                     acidBlock.setPosition(newX, 565.0f);
                     acidBlock.setTexture(&acidTexture);
-
                     acidBlock.setFillColor(sf::Color(50, 255, 50)); //kodla yeşile boyadım
-
                     acidHazards.push_back(acidBlock);
+
+                    // ASİT DOLGUSU
+                    sf::RectangleShape acidFill(sf::Vector2f(150.0f, 200.f));
+                    acidFill.setPosition(newX, 575.0f);
+                    acidFill.setFillColor(sf::Color(50, 255, 50));
+                    acidFills.push_back(acidFill);
 
                 }
                 else{
                     platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
                     platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture, currentLevel));
                     platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture, currentLevel));
+
                 }
                 
                 // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
@@ -393,7 +425,7 @@ int main() {
                  // %50 şansla platformun üzerine 2 adet altın koyması için
                  spawnCoins(newX, newY, coins, &coinTexture);
                 }
-                else if (sans >= 50 && sans < 80) {
+                else if (sans >= 50 && sans < 80 && currentLevel < 3) {
                  // %30 şansla platformun üzerine bir adet devriye gezen düşman oturtmak için
                  // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
                  // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
@@ -440,6 +472,7 @@ int main() {
             coins.clear();
             flyingEnemies.clear();
             acidHazards.clear();
+            acidFills.clear();
 
             currentLevel = 1;
 
@@ -505,6 +538,20 @@ int main() {
             }),
             flyingEnemies.end()
         );
+
+        acidHazards.erase(
+            std::remove_if(acidHazards.begin(), acidHazards.end(), [silecekSinirX](const sf::RectangleShape& a){
+                return (a.getPosition().x + a.getSize().x) < silecekSinirX;
+            }),
+            acidHazards.end()
+        );
+
+        acidFills.erase(
+            std::remove_if(acidFills.begin(), acidFills.end(), [silecekSinirX](const sf::RectangleShape& f){
+            return (f.getPosition().x + f.getSize().x) < silecekSinirX;
+            }),
+            acidFills.end()
+        );
     }  
 
         view.setCenter(player.getPosition().x, 300);
@@ -521,7 +568,7 @@ int main() {
         window.clear();     
 
         // ---- ARKA PLAN GÖRSEL YÖNETİMİ ----
-        if(currentLevel = 2){
+        if(currentLevel == 2){
             backgroundSprite.setTexture(backgroundNightTexture);
             backgroundSprite.setColor(sf::Color::White);
         }
@@ -539,6 +586,17 @@ int main() {
         for (auto& platform : platforms) {
             platform.draw(window);
         }
+
+        // ---- LEVEL 3: ASİT BLOKLARINI EKRANA ÇİZME ----
+        if (currentLevel >= 3) {
+            for(const auto& fill : acidFills){
+                window.draw(fill);
+            }
+            for (const auto& acid : acidHazards) {
+                window.draw(acid);
+            }
+        }
+
         // listedeki her bir düşmanı ekranan tek tek çizdireceğim
         for(auto& enemy : enemies){
             enemy.draw(window);
