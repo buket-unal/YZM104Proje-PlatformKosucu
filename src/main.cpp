@@ -250,6 +250,40 @@ int main() {
         std::cout << "Bos kalp gorseli yuklenemedi!" << std::endl;
     }
 
+    // Oyun döngüsünden hemen önce tanımlanan RESETGAME FONKSİYONU
+auto resetGame = [&]() {
+    // 1. Oyuncuyu koordinat olarak başa döndürmesi ve canını yenilemesi için
+    player.resetPosition();
+    player.setHealth(6);
+
+    // 2. Hafızayı tamamen temizlesi için
+    platforms.clear();
+    enemies.clear();
+    coins.clear();
+    flyingEnemies.clear();
+    acidHazards.clear();
+    acidFills.clear();
+
+    // 3. Bölüm ve skor değişkenlerini sıfırlaması için
+    currentLevel = 1;
+    score = 0;
+    lastX = 700.0f;
+
+    // 4. Ekran durumlarını kapatması için
+    isPortalSpawned = false;
+    isGameOverScreen = false;
+    isGameFinishedScreen = false;
+    isLevelCompleteScreen = false;
+
+    // 5. Harita motorunu ilk günkü haline getirmesi için
+    srand(19);
+
+    // 6. İlk bölüm zeminlerini ve altınlarını yeniden oluşturması için
+    initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+    
+    std::cout << "Oyun basariyla tek bir merkezden sifirlandi!" << std::endl;
+};
+
     // ---------------------------------- OYUN DÖNGÜSÜ ----------------------------------   
     while (window.isOpen()) {
         // ** ETKİNLİK KONTROLÜ (EVENTS) **
@@ -302,46 +336,11 @@ int main() {
                     if(tryAgainButton.getGlobalBounds().contains(mousePosF)){
                         std::cout << "Try Again butonuna tiklandi! Oyun bastan basliyor..." << std::endl;
 
-                        // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
-                        player.resetPosition();
-                        player.setHealth(6);
-
-                        // 2. Hafızayı temizle
-                        platforms.clear();
-                        enemies.clear();
-                        coins.clear();
-                        flyingEnemies.clear();
-                        acidHazards.clear();
-
-                        currentLevel = 1;
-
-                        // 3. Harita motorunu (seed) ilk günkü haline getir
-                        srand(19);
-
-                        // 4. İlk bölüm zeminlerini yeniden oluştur
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
-
-                        for(auto& platform : platforms){
-                            sf::FloatRect pBounds = platform.getBounds();
-                            if(pBounds.top < 550.0f){
-                                float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-                                float coinY = pBounds.top - 40.0f;
-                                coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
-                            }
-                        }
-
-                        // 5. Değişkenleri sıfırla ve ekranı kapat
-                        lastX = 700.0f; 
-                        score = 0; 
-                        isPortalSpawned = false;
-                        isGameOverScreen = false; // Ekranı kapatıp oyunu başlat
+                        resetGame();
                     }
                 }
             }
-        }
+        
         // FARE TIKLAMA KONTROLÜ (GAME COMPLETE EKRANI)
         if (isGameFinishedScreen && event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
@@ -352,54 +351,15 @@ int main() {
                 if (playAgainButton.getGlobalBounds().contains(mousePosF)) {
                     std::cout << "Play Again butonuna tiklandi! Oyun bastan basliyor..." << std::endl;
 
-                    // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
-                    player.resetPosition();
-                    player.setHealth(6);
-
-                    // 2. Hafızayı temizle
-                    platforms.clear();
-                    enemies.clear();
-                    coins.clear();
-                    flyingEnemies.clear();
-                    acidHazards.clear();
-                    acidFills.clear();
-
-                    currentLevel = 1;
+                    resetGame();
 
                     backgroundSprite.setTexture(backgroundTexture);
-
-                    // 3. Harita motorunu (seed) ilk günkü haline getir
-                    srand(19);
-
-                    // 4. İlk bölüm zeminlerini yeniden oluştur
-                    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, 1));
-                    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, 1));
-                    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, 1));
-                    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, 1));
-
-                    for(auto& platform : platforms){
-                        sf::FloatRect pBounds = platform.getBounds();
-                        if(pBounds.top < 550.0f){
-                            float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-                            float coinY = pBounds.top - 40.0f;
-                            coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
-                        }
-                    }
-
-                    // 5. Değişkenleri sıfırla ve ekranları kapat
-                    lastX = 700.0f; 
-                    score = 0; 
-                    isPortalSpawned = false;
-
                     view.setCenter(player.getPosition().x, 300);
                     window.setView(view);
-
-                    isGameOverScreen = false; 
-                    isGameFinishedScreen = false; // Oyun bitti ekranını kapatıp oyunu başlat
                 }
             }
         }
-        
+    }   
      
 
         // ** GÜNCELLEME **
@@ -591,34 +551,9 @@ int main() {
         
         // * Ölüm Kontrolü (Aşağı Düşme ve Tam Reset) *
         if(player.getPosition().y > 1000.0f){
-            // 1. Oyuncuyu koordinat olarak başa döndürmek için
-            player.resetPosition();
-            player.setHealth(6);
-
-            // 2. Hafızadaki tüm eski, yarım yamalak silinmiş nesneleri tamamen temizlemek için
-            platforms.clear();
-            enemies.clear();
-            coins.clear();
-            flyingEnemies.clear();
-            acidHazards.clear();
-            acidFills.clear();
-
-            currentLevel = 1;
-
-            // 3. Rastgelelik motorunu (seed) sıfırlıyorum ki platformlar yine AYNI yerlerde doğsun
-            srand(19);
-
-            // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluşturmak için
-            initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
-
-            // 5. Üretim motorunun kaldığı yer işaretçisini de ilk günkü haline getirmek için
-            lastX = 700.0f; 
-            score = 0; 
-
-            isPortalSpawned = false;
-            isLevelCompleteScreen = false;
             
-            std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
+           resetGame();
+           std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
         }
     
         // ---- HAFIZA TEMİZLİĞİ ----
