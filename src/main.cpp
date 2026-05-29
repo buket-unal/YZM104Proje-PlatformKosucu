@@ -30,10 +30,10 @@ int main() {
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
     sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture, portalTexture, enemySmallTexture;
-    if(!backgroundTexture.loadFromFile("assets/background.png") || 
-        !enemyTexture.loadFromFile("assets/enemy.png") ||
+    if(!backgroundTexture.loadFromFile("assets/level1/background.png") || 
+        !enemyTexture.loadFromFile("assets/level1/enemy.png") ||
         !coinTexture.loadFromFile("assets/coin.png") || 
-        !platformTexture.loadFromFile("assets/ground_dirt.png") || 
+        !platformTexture.loadFromFile("assets/ground_dirt2.png") || 
         !portalTexture.loadFromFile("assets/portal.png") ||
         !enemySmallTexture.loadFromFile("assets/enemy_small.png")){
         cout << "Gorseller yuklenemedi!" << endl;
@@ -101,8 +101,8 @@ int main() {
     // ALT TOPRAK DOLGU
     platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
     // HAVADA ASILI SABİT PLATFORMLAR
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
-    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
+    platforms.push_back(Platform(sf::Vector2f(150.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
+    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
     // LEVEL BİTİŞ ZEMİNİ (oyuncunun portala rahatça yürümesi için)
     //platforms.push_back(Platform(sf::Vector2f(1000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
 
@@ -115,11 +115,8 @@ int main() {
 
         // Eğer platform ana zemin değilse (Y koordinatı 550'den küçükse, yani havadaysa)
         if(pBounds.top < 550.0f){
-            // coini platformun tam ortasına (X) ve birazcık üstüne (Y) yerleştiriyorum
-            float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-            float coinY = pBounds.top - 40.0f;
-
-            coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+            // tek tek elle eklemek yerine döngüdeki spawnCoins motorunu çsğırdım
+            spawnCoins(pBounds.left, pBounds.top, coins, &coinTexture);
         }
     }
 
