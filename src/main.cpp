@@ -20,6 +20,25 @@ void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* c
     coins.push_back(Coin(coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
 }
 
+// Kod tekrarlarını önlemek için haritayı ilk standart haline getiren fonksiyon
+void initializeStartingMap(std::vector<Platform>& platforms, std::vector<Coin>& coins, sf::Texture* platformTexture, sf::Texture* coinTexture, int currentLevel) {
+    // Ana zeminler (Genişlik: 12000px)
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), platformTexture, currentLevel));
+    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), platformTexture, currentLevel));
+    
+    // Standartlaştırılmış 150px genişliğinde başlangıç platformları
+    platforms.push_back(Platform(sf::Vector2f(150.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), platformTexture, currentLevel));
+    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), platformTexture, currentLevel));
+
+    // Yeni altın motoruyla çift altın yerleştirme
+    for(auto& platform : platforms){
+        sf::FloatRect pBounds = platform.getBounds();
+        if(pBounds.top < 550.0f){
+            spawnCoins(pBounds.left, pBounds.top, coins, coinTexture);
+        }
+    }
+}
+
 int main() {
     srand(19);
 
@@ -96,16 +115,7 @@ int main() {
     std::vector<sf::RectangleShape> acidHazards;
     std::vector<sf::RectangleShape> acidFills;
 
-    // ÜST ÇİMLİ ZEMİN
-    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
-    // ALT TOPRAK DOLGU
-    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
-    // HAVADA ASILI SABİT PLATFORMLAR
-    platforms.push_back(Platform(sf::Vector2f(150.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
-    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
-    // LEVEL BİTİŞ ZEMİNİ (oyuncunun portala rahatça yürümesi için)
-    //platforms.push_back(Platform(sf::Vector2f(1000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
-
+    initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
 
@@ -275,19 +285,8 @@ int main() {
                         srand(19 + currentLevel * 15);
           
                         // yeni level haritası
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
-                        platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
-
-                        for(auto& platform : platforms){
-                            sf::FloatRect pBounds = platform.getBounds();
-                            if(pBounds.top < 550.0f){
-                                float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-                                float coinY = pBounds.top - 40.0f;
-                                coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
-                            }
-                        }
+                        initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+                        
                         lastX = 700.0f;
                         score = 0; 
                     }   
@@ -609,24 +608,8 @@ int main() {
             // 3. Rastgelelik motorunu (seed) sıfırlıyorum ki platformlar yine AYNI yerlerde doğsun
             srand(19);
 
-            // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluştur
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, currentLevel));
-            platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, currentLevel));
-
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, currentLevel));
-            platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, currentLevel));
-
-            //platforms.push_back(Platform(sf::Vector2f(2000.0f, 64.0f), sf::Vector2f(9000.0f, 550.0f), &platformTexture));
-            
-            // Sabit platformların üzerine altınları yeniden yerleştirmek için
-            for(auto& platform : platforms){
-                sf::FloatRect pBounds = platform.getBounds();
-                if(pBounds.top < 550.0f){
-                    float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
-                    float coinY = pBounds.top - 40.0f;
-                    coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
-                }
-            }
+            // 4. Oyunun en başındaki o ana zeminleri ve sabit platformları yeniden oluşturmak için
+            initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
 
             // 5. Üretim motorunun kaldığı yer işaretçisini de ilk günkü haline getirmek için
             lastX = 700.0f; 
