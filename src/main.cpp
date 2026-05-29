@@ -82,9 +82,9 @@ int main() {
     backgroundSprite.setTextureRect(sf::IntRect(0, 0, 1600, 600));
 
     int score = 0; // toplanan altın sayınını tutacak
-    int currentLevel = 1;
+    int currentLevel = 3;
     bool isPortalSpawned = false;
-
+    
     // ------------ OYUN NESNELERİ ------------
     Player player;
     std::vector<Enemy> enemies;
@@ -122,7 +122,7 @@ int main() {
     }
 
 
-    // -------- FONT VE YAZI AYARLARI --------
+    // ------------------------- FONT VE YAZI AYARLARI -------------------------
     sf::Font gameFont;
     if(!gameFont.loadFromFile("assets/arial.ttf")){
         std::cout << "Font yuklenemedi! assets/arial.ttf dosyasini kontrol edin. " << std::endl;
@@ -194,8 +194,33 @@ int main() {
     tryAgainText.setOrigin(tryAgainTextBounds.left + tryAgainTextBounds.width / 2.0f, tryAgainTextBounds.top + tryAgainTextBounds.height / 2.0f);
     tryAgainText.setPosition(400.0f, 400.0f);
 
-    sf::Clock clock;
+    // ------ GAME COMPLETE EKRANI DEĞİŞKENLERİ ------
+    bool isGameFinishedScreen = false;
+    // ekranın arkasındaki hafif şeffaf yeşil/mavi panel ekliyorum kutlama hissi vermesi için
+    sf::RectangleShape gameCompleteOverlay(sf::Vector2f(800.0f, 600.0f));
+    gameCompleteOverlay.setFillColor(sf::Color(0, 40, 40, 200)); // koyu şeffaf turkuaz bir ton
 
+    // Play Again butonu (kutu olarak)
+    sf::RectangleShape playAgainButton(sf::Vector2f(200.0f, 60.0f));
+    playAgainButton.setFillColor(sf::Color(20, 144, 255)); // canlı mavi
+    playAgainButton.setOrigin(100.0f, 30.0f);
+    playAgainButton.setPosition(400.0f, 400.0f);
+
+    // Buton üzerindeki PLAY AGAIN yazısı
+    sf::Text playAgainText;
+    playAgainText.setFont(gameFont);
+    playAgainText.setString("PLAY AGAIN");
+    playAgainText.setCharacterSize(20);
+    playAgainText.setFillColor(sf::Color::White);
+    playAgainText.setStyle(sf::Text::Bold);
+
+    // Yazıyı butonun tam merkezine ortalamak için matematiksel hesap
+    sf::FloatRect playAgainTextBounds = playAgainText.getGlobalBounds();
+    playAgainText.setOrigin(playAgainTextBounds.left + playAgainTextBounds.width / 2.0f, playAgainTextBounds.top + playAgainTextBounds.height / 2.0f);
+    playAgainText.setPosition(400.0f, 400.0f);
+
+// -----------------------------------------------------------------------
+    sf::Clock clock;
     // ---- CAN ARAYÜZÜ ----
     sf::Texture heartFulltex;
     if(!heartFulltex.loadFromFile("assets/heart_full.png")){
@@ -308,6 +333,64 @@ int main() {
                 }
             }
         }
+        // FARE TIKLAMA KONTROLÜ (GAME COMPLETE EKRANI)
+        if (isGameFinishedScreen && event.type == sf::Event::MouseButtonPressed) {
+            if (event.mouseButton.button == sf::Mouse::Left) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+
+                // Eğer Play Again butonuna tıklandıysa her şeyi manuel sıfırla
+                if (playAgainButton.getGlobalBounds().contains(mousePosF)) {
+                    std::cout << "Play Again butonuna tiklandi! Oyun bastan basliyor..." << std::endl;
+
+                    // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
+                    player.resetPosition();
+                    player.setHealth(5);
+
+                    // 2. Hafızayı temizle
+                    platforms.clear();
+                    enemies.clear();
+                    coins.clear();
+                    flyingEnemies.clear();
+                    acidHazards.clear();
+                    acidFills.clear();
+
+                    currentLevel = 1;
+
+                    backgroundSprite.setTexture(backgroundTexture);
+
+                    // 3. Harita motorunu (seed) ilk günkü haline getir
+                    srand(19);
+
+                    // 4. İlk bölüm zeminlerini yeniden oluştur
+                    platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), &platformTexture, 1));
+                    platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), &platformTexture, 1));
+                    platforms.push_back(Platform(sf::Vector2f(200.0f, 64.0f), sf::Vector2f(400.0f, 400.0f), &platformTexture, 1));
+                    platforms.push_back(Platform(sf::Vector2f(200.0f, 60.0f), sf::Vector2f(700.0f, 380.0f), &platformTexture, 1));
+
+                    for(auto& platform : platforms){
+                        sf::FloatRect pBounds = platform.getBounds();
+                        if(pBounds.top < 550.0f){
+                            float coinX = pBounds.left + (pBounds.width / 2.0f) - 16.0f;
+                            float coinY = pBounds.top - 40.0f;
+                            coins.push_back(Coin(&coinTexture, sf::Vector2f(coinX, coinY)));
+                        }
+                    }
+
+                    // 5. Değişkenleri sıfırla ve ekranları kapat
+                    lastX = 700.0f; 
+                    score = 0; 
+                    isPortalSpawned = false;
+
+                    view.setCenter(player.getPosition().x, 300);
+                    window.setView(view);
+
+                    isGameOverScreen = false; 
+                    isGameFinishedScreen = false; // Oyun bitti ekranını kapatıp oyunu başlat
+                }
+            }
+        }
+        
      
 
         // ** GÜNCELLEME **
@@ -379,9 +462,19 @@ int main() {
 
         // * ÇARPIŞMA GÜNCELLEMELERİ (Portal / Level Geçişi) *
         // Eğer tebrikler ekranı halihazırda açık değilse, portal doğduysa ve oyuncu değdiyse ekranı tetikle
-        if (!isLevelCompleteScreen && isPortalSpawned && player.getBounds().intersects(portalHitbox.getGlobalBounds())) {
-            isLevelCompleteScreen = true; // Oyunu durdurma sinyalini yak ve ekranı aç!
-            std::cout << "Portal tetiklendi! Tebrikler ekrani aciliyor." << std::endl;
+        if (!isLevelCompleteScreen && !isGameFinishedScreen && isPortalSpawned && player.getBounds().intersects(portalHitbox.getGlobalBounds())) {
+
+            if(currentLevel == 3){
+                // Eğer 3. leveldeyse oyun bitmiştir
+                isGameFinishedScreen = true;
+                std::cout << "Portal tetiklendi! Oyun tamamen bitti, Tebrikler ekrani aciliyor." << std::endl;
+            }
+            else{
+                // 1. veya 2. leveldeyse normal sonraki level ekranı açılsın
+                isLevelCompleteScreen = true; 
+                std::cout << "Portal tetiklendi! Tebrikler ekrani aciliyor." << std::endl;
+            }
+            
         }
     
         // * SONSUZ PLATFORM Üretimi *
@@ -564,7 +657,7 @@ int main() {
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
         
 
-        // ---- ÇİZİM ----
+        // ---------------------------- ÇİZİM ----------------------------
         window.clear();     
 
         // ---- ARKA PLAN GÖRSEL YÖNETİMİ ----
@@ -672,6 +765,26 @@ int main() {
             // Yazıyı ekrana ortalamak için
             gameOverText.setPosition(220.0f, 200.0f);
             window.draw(gameOverText);
+        }
+
+        // GAME COMPLETE EKRANI ÇİZİMİ
+        if(isGameFinishedScreen){
+            window.setView(window.getDefaultView());
+            
+            window.draw(gameCompleteOverlay);
+            window.draw(playAgainButton);
+            window.draw(playAgainText);
+
+            sf::Text winText;
+            winText.setFont(gameFont);
+            winText.setString("CONGRATULATIONS!\nYou Have Finished The Game!");
+            winText.setCharacterSize(35);
+            winText.setFillColor(sf::Color::Yellow);
+            winText.setStyle(sf::Text::Bold);
+
+            // Yazıyı ekrana ortalamak için pozisyon ayarı
+            winText.setPosition(160.0f, 200.0f);
+            window.draw(winText);
         }
 
         window.display();
