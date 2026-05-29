@@ -22,6 +22,8 @@ class Player {
     void setHealth(int h){
         health = h;
     }
+    float getVelocityY() const;
+    void bounce();
 
     private:
     sf::RectangleShape shape;

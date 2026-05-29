@@ -29,12 +29,13 @@ int main() {
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
     // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
-    sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture, portalTexture;
+    sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture, portalTexture, enemySmallTexture;
     if(!backgroundTexture.loadFromFile("assets/background.png") || 
         !enemyTexture.loadFromFile("assets/enemy.png") ||
         !coinTexture.loadFromFile("assets/coin.png") || 
         !platformTexture.loadFromFile("assets/ground_dirt.png") || 
-        !portalTexture.loadFromFile("assets/portal.png")){
+        !portalTexture.loadFromFile("assets/portal.png") ||
+        !enemySmallTexture.loadFromFile("assets/enemy_small.png")){
         cout << "Gorseller yuklenemedi!" << endl;
     }
 
@@ -421,14 +422,40 @@ int main() {
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyor
         
 
-        // * ÇARPIŞMA Güncellemeri (Düşmanlar) *
-        for(auto& enemy : enemies){
-            enemy.update(deltaTime);
-            //eğer oyuncu ölümsüz değilse ve düşman çarptıysa
-            if(player.getBounds().intersects(enemy.getBounds())){
-                player.takeDamage(); //kendi içinde zaten isInvincible kontrolü yapıyor
+        // YENİ SAVAŞMA VE EZME MOTORU:
+        for (auto it = enemies.begin(); it != enemies.end(); ) {
+            // eğer düşman zaten küçülmüşse ve ekranda kalma süresi dolmuşsa listeden çıkarması için
+            if(it->isDead()){
+                it = enemies.erase(it);
+                continue;
             }
-        }
+            it->update(deltaTime);
+
+            if (player.getBounds().intersects(it->getBounds())) {
+                // Oyuncunun düşmanın kafasına basıp basmadığını kontrol ediyoruz:
+                // 1. Oyuncu aşağı doğru düşüyor olmalı (hızı pozitif olmalı, SFML'de aşağısı pozitiftir)
+                // 2. Oyuncunun ayakları, düşmanın merkezinden/kafasından yukarıda olmalı
+                if (player.getVelocityY() > 0.0f && (player.getBounds().top + player.getBounds().height) < (it->getBounds().top + 20.0f)) {
+                    
+                    std::cout << "Düsmanin kafasina basildi! Düsman yok edildi." << std::endl;
+                    
+                    // Oyuncuyu Mario gibi yukarı doğru hafifçe zıplatıyorum (yaylanma efekti)
+                    player.bounce();
+                    it->makeSmall();
+                    
+                    // Düşmanı vektörden (listeden) siliyorum ve iteratörü güncelliyorum
+                    it++;
+                    score += 2; // Düşmanı yenince oyuncuya ödül olarak +2 skor veriyorum
+                    continue; 
+                } 
+                else {
+                    // Eğer kafasına basmadıysa, yanından çarptıysa oyuncu hasar alır
+                    player.takeDamage(); 
+                }
+            }
+            it++; // Eğer çarpışma yoksa sıradaki düşmana geçmesi için
+        }   
+
         for(auto& fEnemy : flyingEnemies){
             fEnemy.update(deltaTime); // yarasanın kendi içindeki sinüs dalgasını ve kanat çırpışını oynatması için
             // eğer oyuncu yarasaya çarparsa hasar alması için
@@ -535,7 +562,7 @@ int main() {
                  // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
                  // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
                  float groundEnemyY = 550.0f;
-                 enemies.push_back(Enemy(&enemyTexture, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
+                 enemies.push_back(Enemy(&enemyTexture, &enemySmallTexture, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
              }
              // Geri kalan %20 şansla da platform boş kalır, oyuncu rahatça zıplar
 

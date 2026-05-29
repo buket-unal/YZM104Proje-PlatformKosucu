@@ -211,3 +211,11 @@ void Player::takeDamage(){
 sf::FloatRect Player::getBounds(){
     return shape.getGlobalBounds();
 }
+
+float Player::getVelocityY() const{
+    return velocity.y;
+}
+
+void Player::bounce(){
+    velocity.y = -350; // oyuncuyu eksi yönde yani yukarı doğru fırlatıyorum
+}
