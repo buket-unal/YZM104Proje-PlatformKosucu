@@ -1,6 +1,6 @@
 #include "Enemy.hpp"
 
-Enemy::Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Vector2f position, float range){
+Enemy::Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Font* font,  sf::Vector2f position, float range){
     sprite.setTexture(*texture);
 
     // orijini görselin tam ortası yapıyorum
@@ -10,6 +10,7 @@ Enemy::Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Vector2f posit
     sprite.setPosition(position);
 
     this->smallTexture = smallTexture;
+    this->gameFont = font; // main'den gelen font adresini içeriye kopyaladım
 
     this->startX = position.x;
     this->range = range;
@@ -45,11 +46,10 @@ void Enemy::draw(sf::RenderWindow& window){
         window.draw(sprite);
 
         // eğer düşmanı küçültüp yok ettiysek +2 yazsın
-        if(this->isSmall){
-            sf::Font font;
-            if(font.loadFromFile("assets/arial.ttf")){
+        if(this->isSmall && this->gameFont){
+            
                 sf::Text plusTwoText;
-                plusTwoText.setFont(font);
+                plusTwoText.setFont(*this->gameFont); // diskten okumayacak, ramdeki hazır fontu kullanacak
                 plusTwoText.setString("+2");
                 plusTwoText.setCharacterSize(18);
                 plusTwoText.setFillColor(sf::Color::Yellow);
@@ -66,7 +66,7 @@ void Enemy::draw(sf::RenderWindow& window){
             }
 
         }
-    }
+    
 
 sf::FloatRect Enemy::getBounds() const{
         return sprite.getGlobalBounds();

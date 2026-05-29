@@ -558,7 +558,7 @@ int main() {
                  // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
                  // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
                  float groundEnemyY = 550.0f;
-                 enemies.push_back(Enemy(&enemyTexture, &enemySmallTexture, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
+                 enemies.push_back(Enemy(&enemyTexture, &enemySmallTexture, &gameFont, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
              }
              // Geri kalan %20 şansla da platform boş kalır, oyuncu rahatça zıplar
 
@@ -646,7 +646,7 @@ int main() {
         );
 
         flyingEnemies.erase(
-            std::remove_if(flyingEnemies.begin(), flyingEnemies.end(), [silecekSinirX] (const FlyingEnemy fEnemy){
+            std::remove_if(flyingEnemies.begin(), flyingEnemies.end(), [silecekSinirX] (const FlyingEnemy& fEnemy){
                 return (fEnemy.getBounds().left + fEnemy.getBounds().width) < silecekSinirX;
             }),
             flyingEnemies.end()

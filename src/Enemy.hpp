@@ -6,7 +6,7 @@
 class Enemy{
     public:
     // boyut, başlangıç pozisyonu ve ne kadar uzağa gideceği
-    Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Vector2f position, float range);
+    Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Font* font, sf::Vector2f position, float range);
 
     void update(float deltaTime);
     void draw(sf::RenderWindow& window);
@@ -25,6 +25,7 @@ class Enemy{
 
     bool isSmall = false;
     sf::Texture* smallTexture; // küçük görselin adresini tutacak pointer
+    sf::Font* gameFont; // main'den gelecek fontun adresini saklamak için ekledim
     sf::Clock smallClock; // Ezildikten sonra geçen 0.2 saniyeyi sayacak kronometre
 
 };  
