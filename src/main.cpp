@@ -82,11 +82,12 @@ int main() {
     backgroundSprite.setTextureRect(sf::IntRect(0, 0, 1600, 600));
 
     int score = 0; // toplanan altın sayınını tutacak
-    int currentLevel = 3;
+    int currentLevel = 1;
     bool isPortalSpawned = false;
     
     // ------------ OYUN NESNELERİ ------------
     Player player;
+    player.setHealth(6);
     std::vector<Enemy> enemies;
     std::vector<Platform> platforms;
     std::vector<Coin> coins;
@@ -221,7 +222,8 @@ int main() {
 
 // -----------------------------------------------------------------------
     sf::Clock clock;
-    // ---- CAN ARAYÜZÜ ----
+
+    // -------- CAN ARAYÜZÜ --------
     sf::Texture heartFulltex;
     if(!heartFulltex.loadFromFile("assets/heart_full.png")){
         // hata mesajı
@@ -229,6 +231,16 @@ int main() {
     sf::Sprite heartSprite;
     heartSprite.setTexture(heartFulltex);
     heartSprite.setScale(2.0f, 2.0f);
+
+    sf::Texture heartHalfTex; // Yarım kalp dokusu
+    if(!heartHalfTex.loadFromFile("assets/heart_half.png")){ 
+        std::cout << "Yarim kalp gorseli yuklenemedi!" << std::endl;
+    }
+
+    sf::Texture heartEmptyTex; // Boş kalp dokusu
+    if(!heartEmptyTex.loadFromFile("assets/heart_empty.png")){ 
+        std::cout << "Bos kalp gorseli yuklenemedi!" << std::endl;
+    }
 
     // ---------------------------------- OYUN DÖNGÜSÜ ----------------------------------   
     while (window.isOpen()) {
@@ -251,7 +263,7 @@ int main() {
                         std::cout << "Butona tiklandi! Level" << currentLevel << " yukleniyor..." << std::endl;
 
                         player.resetPosition();
-                        player.setHealth(5);
+                        player.setHealth(6);
 
                         platforms.clear();
                         enemies.clear();
@@ -295,7 +307,7 @@ int main() {
 
                         // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
                         player.resetPosition();
-                        player.setHealth(5);
+                        player.setHealth(6);
 
                         // 2. Hafızayı temizle
                         platforms.clear();
@@ -345,7 +357,7 @@ int main() {
 
                     // 1. Oyuncuyu koordinat olarak başa döndür ve canını yenile
                     player.resetPosition();
-                    player.setHealth(5);
+                    player.setHealth(6);
 
                     // 2. Hafızayı temizle
                     platforms.clear();
@@ -558,6 +570,7 @@ int main() {
         if(player.getPosition().y > 1000.0f){
             // 1. Oyuncuyu koordinat olarak başa döndürmek için
             player.resetPosition();
+            player.setHealth(6);
 
             // 2. Hafızadaki tüm eski, yarım yamalak silinmiş nesneleri tamamen temizlemek için
             platforms.clear();
@@ -715,17 +728,36 @@ int main() {
         // YAZILARI ÇİZDİRME
         // Skor yazısını dinamik skor değişkenine bağlayıp kalplerin sağ tarafına (280, 20) koyuyorum
         scoreText.setString("Skor: " + std::to_string(score));
-        scoreText.setPosition(280.0f, 20.0f);
+        scoreText.setPosition(180.0f, 20.0f);
         window.draw(scoreText);
 
         // Level yazısını dinamik level değişkenine bağlayıp skorun hemen yanına (420, 20) koyuyorum
         levelText.setString("Level: " + std::to_string(currentLevel));
-        levelText.setPosition(420.0f, 20.0f);
+        levelText.setPosition(300.0f, 20.0f);
         window.draw(levelText);
 
-        for(int i=0; i<player.getHealth(); i++){ 
-            heartSprite.setPosition(20.0f + (i * 45.0f), 20.0f); 
-            window.draw(heartSprite);
+        // YENİ YARIM KALP ÇİZİM MOTORU:
+        int currentHealth = player.getHealth(); // Oyuncunun anlık canı (0 ile 6 arasında)
+
+        for (int i = 0; i < 3; i++) {
+            // Kalbin ekran üzerindeki yan yana X pozisyonunu hesaplıyorum
+            float heartX = 20.0f + (i * 45.0f);
+            heartSprite.setPosition(heartX, 20.0f);
+
+            // Eğer bu kalp yuvası için oyuncunun en az 2 canı varsa -> TAM KALP çizecek
+            if (currentHealth >= (i * 2) + 2) {
+                heartSprite.setTexture(heartFulltex);
+                window.draw(heartSprite);
+            }
+            // Eğer oyuncunun tam 1 canı kalmışsa bu yuvaya -> YARIM KALP çizecek
+            else if (currentHealth == (i * 2) + 1) {
+                heartSprite.setTexture(heartHalfTex);
+                window.draw(heartSprite);
+            }
+            else{
+                heartSprite.setTexture(heartEmptyTex);
+                window.draw(heartSprite);
+            }
         }
 
         if (isLevelCompleteScreen) {
