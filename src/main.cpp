@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Player.hpp"
 #include <vector>
 #include "Platform.hpp"
@@ -116,6 +117,26 @@ int main() {
     std::vector<sf::RectangleShape> acidFills;
 
     initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+
+    // ---- SES DOSYALARININ YÜKLENMESİ ----
+    sf::SoundBuffer coinBuffer, jumpBuffer, damageBuffer;
+
+    if(!coinBuffer.loadFromFile("assets/coinSound.ogg") ||
+        !jumpBuffer.loadFromFile("assets/jumpSound.ogg") ||
+        !damageBuffer.loadFromFile("assets/damageSound.ogg")){
+            std::cout << "Ses dosyalari yuklenemedi! Isimleri kontrol edin." << std::endl;
+    }
+
+    sf::Sound coinSound(coinBuffer);
+    sf::Sound jumpSound(jumpBuffer);
+    sf::Sound damageSound(damageBuffer);
+
+    // ses seviyeleri
+    coinSound.setVolume(40.0f);
+    jumpSound.setVolume(50.0f);
+    damageSound.setVolume(50.0f);
+
+    // -------------------------------------------------------
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
 
@@ -361,7 +382,6 @@ auto resetGame = [&]() {
         }
     }   
      
-
         // ** GÜNCELLEME **
         float deltaTime = clock.restart().asSeconds(); // zamanı başlattım
 
@@ -374,7 +394,7 @@ auto resetGame = [&]() {
             }
 
         // * Nesne Güncellemeleri *
-        player.update(deltaTime);
+        player.update(deltaTime, jumpSound);
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyor
         
 
@@ -398,11 +418,13 @@ auto resetGame = [&]() {
                     player.bounce();
                     it->makeSmall();
                     score += 2; // Düşmanı yenince oyuncuya ödül olarak +2 skor veriyorum
+                    coinSound.play();
                     continue; 
                 } 
                 else {
                     // Eğer kafasına basmadıysa, yanından çarptıysa oyuncu hasar alır
                     player.takeDamage(it->getBounds().left); 
+                    damageSound.play();
                 }
             }
             it++; // Eğer çarpışma yoksa sıradaki düşmana geçmesi için
@@ -413,6 +435,7 @@ auto resetGame = [&]() {
             // eğer oyuncu yarasaya çarparsa hasar alması için
             if(player.getBounds().intersects(fEnemy.getBounds())){
                 player.takeDamage(fEnemy.getBounds().left);
+                damageSound.play();
             }
         }
 
@@ -422,6 +445,7 @@ auto resetGame = [&]() {
             if(!coin.isCollected() && player.getBounds().intersects(coin.getBounds())){
                 coin.collect(); // altını toplandı olarak işaretleyecek
                 score++;
+                coinSound.play();
                 std::cout << "Coin Toplandı! Mevcut Skor: " << score << std::endl;
             }
         }
@@ -446,7 +470,8 @@ auto resetGame = [&]() {
             for(auto& acid : acidHazards){
                 if(player.getBounds().intersects(acid.getGlobalBounds())){
                     player.takeDamage(player.getPosition().x);
-                    std::cout << "⚠️ Oyuncu aside basti! Cani azaliyor." << std::endl;
+                    damageSound.play();
+                    std::cout << "Oyuncu aside basti! Cani azaliyor." << std::endl;
                 }
             }
         }

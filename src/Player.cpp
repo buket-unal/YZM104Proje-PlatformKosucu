@@ -35,7 +35,7 @@ Player::Player() {
     isInvincible = false;    
 }
 
-void Player::update(float deltaTime) {
+void Player::update(float deltaTime, sf::Sound& jumpSound) {
 
     // ---- DURUM GÜNCELLEMELRİ ----
     if(isInvincible){
@@ -73,6 +73,7 @@ void Player::update(float deltaTime) {
     if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && isGrounded){
         velocity.y = jumpSpeed * 60.0f;
         isGrounded = false;
+        jumpSound.play();
     }
 
     velocity.y += gravity * 60.0f; // yer çekimi

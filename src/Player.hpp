@@ -2,6 +2,7 @@
 #define PLAYER_HPP
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Platform.hpp"
 
 class Player {
@@ -9,7 +10,7 @@ class Player {
     public:
     Player();
 
-    void update(float deltaTime); 
+    void update(float deltaTime, sf::Sound& jumpSpeed); 
     void checkCollision(std::vector<Platform>& platforms);
     void draw(sf::RenderWindow& window); // Ekrana çizer
     sf::Vector2f getPosition() const;
