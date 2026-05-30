@@ -15,6 +15,7 @@ class Enemy{
     void makeSmall();
     bool isDead() const;
 
+    bool getIsSmall() const { return isSmall; }
 
     private: 
     sf::Sprite sprite;

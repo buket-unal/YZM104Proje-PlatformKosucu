@@ -31,7 +31,7 @@ Player::Player() {
     isMoving = false; // başlangıçta karakter dursun
 
     // ---- OYUN İSTATİSTİKLERİ ----
-    health = 5;
+    health = 6;
     isInvincible = false;    
 }
 

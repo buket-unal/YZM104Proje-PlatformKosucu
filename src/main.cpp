@@ -387,20 +387,16 @@ auto resetGame = [&]() {
             }
             it->update(deltaTime);
 
-            if (player.getBounds().intersects(it->getBounds())) {
-                // Oyuncunun düşmanın kafasına basıp basmadığını kontrol ediyoruz:
-                // 1. Oyuncu aşağı doğru düşüyor olmalı (hızı pozitif olmalı, SFML'de aşağısı pozitiftir)
+            if (!it->getIsSmall() && player.getBounds().intersects(it->getBounds())) {
+                // Oyuncunun düşmanın kafasına basıp basmadığını kontrol ediyorum:
+                // 1. Oyuncu aşağı doğru düşüyor olmalı (hızı pozitif olmalı, SFML'de aşağısı pozitif)
                 // 2. Oyuncunun ayakları, düşmanın merkezinden/kafasından yukarıda olmalı
                 if (player.getVelocityY() > 0.0f && (player.getBounds().top + player.getBounds().height) < (it->getBounds().top + 20.0f)) {
                     
-                    std::cout << "Düsmanin kafasina basildi! Düsman yok edildi." << std::endl;
-                    
+                    std::cout << "Düsmanin kafasina basildi! Düsman yok edildi." << std::endl;   
                     // Oyuncuyu Mario gibi yukarı doğru hafifçe zıplatıyorum (yaylanma efekti)
                     player.bounce();
                     it->makeSmall();
-                    
-                    // Düşmanı vektörden (listeden) siliyorum ve iteratörü güncelliyorum
-                    it++;
                     score += 2; // Düşmanı yenince oyuncuya ödül olarak +2 skor veriyorum
                     continue; 
                 } 
