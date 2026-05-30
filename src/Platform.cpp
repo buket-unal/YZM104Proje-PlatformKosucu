@@ -4,15 +4,15 @@
 
 using namespace std;
 
-Platform::Platform(sf::Vector2f size, sf::Vector2f position, const sf::Texture& platformTexture, int level) 
-    : texture(platformTexture)
-{
+Platform::Platform(sf::Vector2f size, sf::Vector2f position, sf::Texture* platformTexture, int level){
     this->currentLevel = level;
     shape.setSize(size);
     shape.setFillColor(sf::Color::Transparent);
     shape.setPosition(position);
 
-    sprite.setTexture(texture.get());
+    this->texture = platformTexture;
+    this->texture->setRepeated(true);
+    sprite.setTexture(*this->texture);
     sprite.setTextureRect(sf::IntRect(0, 0, static_cast<int>(size.x), static_cast<int>(size.y)));
     sprite.setPosition(position);
     

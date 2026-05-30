@@ -5,13 +5,13 @@
 
 class Platform {
 public:
-    Platform(sf::Vector2f size, sf::Vector2f position, const sf::Texture& platformTexture, int level);
+    Platform(sf::Vector2f size, sf::Vector2f position, sf::Texture* platformTexture, int level);
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
 
 private:
     sf::RectangleShape shape;
-    std::reference_wrapper<const sf::Texture> texture;
+    sf::Texture* texture;
     sf::Sprite sprite; 
     int currentLevel;
 };
