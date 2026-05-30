@@ -194,16 +194,20 @@ void Player::resetPosition(){
     velocity = sf::Vector2f(0.0f, 0.0f); // düşme hızını sıfırlayacak
 }
 
-void Player::takeDamage(){
+void Player::takeDamage(float enemyX){
     if(!isInvincible){
         health--;
         isInvincible = true;
         damageTimer.restart(); // şu andan itibaren kronometre başlatacak,bu karakteri hasar aldığı 0. saniye
 
-        // karakteri hafif geri ve yukarı fırlatmak için
-        velocity.x = -400.0f;
-        velocity.y = -300.0f;
-
+        if(shape.getPosition().x < enemyX){
+            velocity.x = -400.0f;
+        }
+        else{
+            velocity.x = 400.0f;
+        }
+    
+        velocity.y = -300.0f; // yukarı fırlaması için
         isGrounded = false;
     }
 }

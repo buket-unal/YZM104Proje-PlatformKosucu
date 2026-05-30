@@ -14,7 +14,7 @@ class Player {
     void draw(sf::RenderWindow& window); // Ekrana çizer
     sf::Vector2f getPosition() const;
     void resetPosition();
-    void takeDamage();
+    void takeDamage(float enemyX);
     sf::FloatRect getBounds();
     int getHealth() const {
         return health; //oyuncunun kaç canı kaldığını bilmesi için 

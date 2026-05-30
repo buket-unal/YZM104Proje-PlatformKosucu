@@ -21,7 +21,7 @@ void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* c
 }
 
 // Kod tekrarlarını önlemek için haritayı ilk standart haline getiren fonksiyon
-void initializeStartingMap(std::vector<Platform>& platforms, std::vector<Coin>& coins, sf::Texture* platformTexture, sf::Texture* coinTexture, int currentLevel) {
+void initializeStartingMap(std::vector<Platform>& platforms, std::vector<Coin>& coins, sf::Texture& platformTexture, sf::Texture* coinTexture, int currentLevel) {
     // Ana zeminler (Genişlik: 12000px)
     platforms.push_back(Platform(sf::Vector2f(12000.0f, 64.0f), sf::Vector2f(-1000.0f, 550.0f), platformTexture, currentLevel));
     platforms.push_back(Platform(sf::Vector2f(12000.0f, 400.0f), sf::Vector2f(-1000.0f, 614.0f), platformTexture, currentLevel));
@@ -115,7 +115,7 @@ int main() {
     std::vector<sf::RectangleShape> acidHazards;
     std::vector<sf::RectangleShape> acidFills;
 
-    initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+    initializeStartingMap(platforms, coins, platformTexture, &coinTexture, currentLevel);
 
     float lastX = 700.0f; // En son eklediğim platformun yaklaşık konumu 
 
@@ -279,7 +279,7 @@ auto resetGame = [&]() {
     srand(19);
 
     // 6. İlk bölüm zeminlerini ve altınlarını yeniden oluşturması için
-    initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+    initializeStartingMap(platforms, coins, platformTexture, &coinTexture, currentLevel);
     
     std::cout << "Oyun basariyla tek bir merkezden sifirlandi!" << std::endl;
 };
@@ -319,7 +319,7 @@ auto resetGame = [&]() {
                         srand(19 + currentLevel * 15);
           
                         // yeni level haritası
-                        initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
+                        initializeStartingMap(platforms, coins, platformTexture, &coinTexture, currentLevel);
                         
                         lastX = 700.0f;
                         score = 0; 
@@ -402,7 +402,7 @@ auto resetGame = [&]() {
                 } 
                 else {
                     // Eğer kafasına basmadıysa, yanından çarptıysa oyuncu hasar alır
-                    player.takeDamage(); 
+                    player.takeDamage(it->getBounds().left); 
                 }
             }
             it++; // Eğer çarpışma yoksa sıradaki düşmana geçmesi için
@@ -412,7 +412,7 @@ auto resetGame = [&]() {
             fEnemy.update(deltaTime); // yarasanın kendi içindeki sinüs dalgasını ve kanat çırpışını oynatması için
             // eğer oyuncu yarasaya çarparsa hasar alması için
             if(player.getBounds().intersects(fEnemy.getBounds())){
-                player.takeDamage();
+                player.takeDamage(fEnemy.getBounds().left);
             }
         }
 
@@ -445,7 +445,7 @@ auto resetGame = [&]() {
 
             for(auto& acid : acidHazards){
                 if(player.getBounds().intersects(acid.getGlobalBounds())){
-                    player.takeDamage();
+                    player.takeDamage(player.getPosition().x);
                     std::cout << "⚠️ Oyuncu aside basti! Cani azaliyor." << std::endl;
                 }
             }
@@ -480,7 +480,7 @@ auto resetGame = [&]() {
                 // eğer level 3 ise %35 şans ile zemin üretmeyip çukur açması için
                 if(currentLevel >= 3 && (rand() % 100 < 35)){
 
-                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), platformTexture, currentLevel));
 
                     // ASİT YÜZEYİ
                     sf::RectangleShape acidBlock(sf::Vector2f(150.0f, 45.0f));
@@ -497,9 +497,9 @@ auto resetGame = [&]() {
 
                 }
                 else{
-                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), &platformTexture, currentLevel));
-                    platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), &platformTexture, currentLevel));
-                    platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), &platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(150.0f, 60.0f), sf::Vector2f(newX, newY), platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(400.0f, 64.0f), sf::Vector2f(newX, 550.0f), platformTexture, currentLevel));
+                    platforms.push_back(Platform(sf::Vector2f(400.0f, 400.0f), sf::Vector2f(newX, 614.0f), platformTexture, currentLevel));
 
                 }
                 
