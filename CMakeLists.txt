@@ -47,4 +47,9 @@ if(WIN32)
         $<TARGET_FILE_DIR:PlatformKosucu>
         COMMAND_EXPAND_LISTS
     )
+    add_custom_command(TARGET PlatformKosucu POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/_deps/sfml-src/extlibs/bin/x64/openal32.dll"
+        "$<TARGET_FILE_DIR:PlatformKosucu>"
+    )
 endif()
