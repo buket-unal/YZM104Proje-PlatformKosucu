@@ -8,13 +8,11 @@ class Enemy{
     // boyut, başlangıç pozisyonu ve ne kadar uzağa gideceği
     Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Font* font, sf::Vector2f position, float range);
 
-    void update(float deltaTime);
+    void update(float deltaTime); // düşmanın her karede yürümesini ve sınıra gelince geri dönmesini sağlayan fonksiyon
     void draw(sf::RenderWindow& window);
-
     sf::FloatRect getBounds() const; // çarpışma kontrolü için
     void makeSmall();
     bool isDead() const;
-
     bool getIsSmall() const { return isSmall; }
 
     private: 

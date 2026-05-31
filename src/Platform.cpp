@@ -6,6 +6,7 @@ using namespace std;
 
 Platform::Platform(sf::Vector2f size, sf::Vector2f position, sf::Texture* platformTexture, int level){
     this->currentLevel = level;
+    // görünmez hitbox ayarları
     shape.setSize(size);
     shape.setFillColor(sf::Color::Transparent);
     shape.setPosition(position);
@@ -30,7 +31,6 @@ Platform::Platform(sf::Vector2f size, sf::Vector2f position, sf::Texture* platfo
 
 
 void Platform::draw(sf::RenderWindow& window) {
-    //window.draw(shape);
     window.draw(sprite);
 }
 

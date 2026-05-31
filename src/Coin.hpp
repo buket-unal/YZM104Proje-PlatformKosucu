@@ -5,18 +5,13 @@
 
 class Coin{
     public:
-
-    // coinin nerede duracağını ve hangi resmi kullanacağını belirleyen yapıcı fonksiyonum
+    // coinin nerede duracağını ve hangi resmi kullanacağını belirleyen yapıcı fonksiyon
     Coin(sf::Texture* texture, sf::Vector2f position);
 
     void draw(sf::RenderWindow& window);
     sf::FloatRect getBounds() const;
-    bool isCollected() const{
-        return collected;
-    }
-    void collect(){
-        collected = true;
-    }
+    bool isCollected() const{ return collected; }
+    void collect(){ collected = true; }
 
     private:
     sf::Sprite sprite;

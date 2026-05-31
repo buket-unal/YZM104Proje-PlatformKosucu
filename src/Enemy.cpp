@@ -2,31 +2,27 @@
 
 Enemy::Enemy(sf::Texture* texture, sf::Texture* smallTexture, sf::Font* font,  sf::Vector2f position, float range){
     sprite.setTexture(*texture);
-
     // orijini görselin tam ortası yapıyorum
     sf::FloatRect localBounds = sprite.getLocalBounds();
     sprite.setOrigin(localBounds.width / 2.0f, localBounds.height);
-
+    
     sprite.setPosition(position);
-
     this->smallTexture = smallTexture;
-    this->gameFont = font; // main'den gelen font adresini içeriye kopyaladım
-
+    this->gameFont = font; 
     this->startX = position.x;
     this->range = range;
     this->speed = 100.0f;
     this->direction = 1;
     this->isSmall = false; 
-
-    sprite.setScale(2.5f, 2.5f); // başlangıçta sağa bakacak
+    sprite.setScale(2.5f, 2.5f); 
 }
 
 void Enemy::update(float deltaTime){
-    // eğer düşman küçüldüyse yürümesin çıksın diye
+    // küçülen düşman yerde sabit dursun
     if(this->isSmall){
         return;
     }
-
+    
     sprite.move(speed * direction * deltaTime, 0);
 
     // Sınır kontrollerine genişliğin yarısını (offset) ekleyip çıkarmak milimetrik hassasiyet sağlayacak
@@ -61,7 +57,6 @@ void Enemy::draw(sf::RenderWindow& window){
                 float animationOffset = elapsed * 80.0f; // Yukarı doğru uçma hızı
 
                 plusTwoText.setPosition(sprite.getPosition().x - 10.0f, sprite.getPosition().y - 60.0f - animationOffset);
-                
                 window.draw(plusTwoText);
             }
 
@@ -74,15 +69,14 @@ sf::FloatRect Enemy::getBounds() const{
 
 void Enemy::makeSmall() {
     this->isSmall = true;
-    this->sprite.setTexture(*this->smallTexture); // Sprite'a yeni görsel
+    this->sprite.setTexture(*this->smallTexture); 
     
     sf::FloatRect localBounds = sprite.getLocalBounds();
     sprite.setOrigin(localBounds.width / 2.0f, localBounds.height);
 
     // Yönü ne olursa olsun (sağ/sol) küçülünce düz dursun diye scale değerini 2.5f yapıyorum
     sprite.setScale(2.5f, 2.5f); 
-
-    this->smallClock.restart(); // 0.2 saniyelik yok olma kronometresi başladı
+    this->smallClock.restart(); // 0.2 saniyelik yok olma kronometresi 
 }
 
 bool Enemy::isDead() const {

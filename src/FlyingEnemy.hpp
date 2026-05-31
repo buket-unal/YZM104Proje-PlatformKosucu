@@ -11,7 +11,6 @@ class FlyingEnemy{
 
     void update(float deltaTime);
     void draw(sf::RenderWindow& window);
-
     sf::FloatRect getBounds() const;
 
     private:

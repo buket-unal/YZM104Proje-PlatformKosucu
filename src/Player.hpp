@@ -6,36 +6,32 @@
 #include "Platform.hpp"
 
 class Player {
-    
-    public:
+public:
     Player();
 
     void update(float deltaTime, sf::Sound& jumpSpeed); 
     void checkCollision(std::vector<Platform>& platforms);
     void draw(sf::RenderWindow& window); // Ekrana çizer
+
     sf::Vector2f getPosition() const;
     void resetPosition();
     void takeDamage(float enemyX);
     sf::FloatRect getBounds();
-    int getHealth() const {
-        return health; //oyuncunun kaç canı kaldığını bilmesi için 
-    }
-    void setHealth(int h){
-        health = h;
-    }
+
+    int getHealth() const { return health; } //oyuncunun kaç canı kaldığını bilmesi için 
+    void setHealth(int h){ health = h; }
     float getVelocityY() const;
     void bounce();
 
-    private:
+private:
     sf::RectangleShape shape;
     sf::Texture textureIdle; // Sabit durma resmi (player.png)
     sf::Texture textureWalk; // Yürüme/Zıplama resmi (player_walk.png)
-    sf::Sprite sprite; // resmi ekranda hareket ettiren obje
+    sf::Sprite sprite; 
     sf::Vector2f velocity;
     float gravity;
     float moveSpeed;
     float jumpSpeed;
-
     bool isGrounded;
     
     sf::Clock animationClock; // Zamanı tutacak

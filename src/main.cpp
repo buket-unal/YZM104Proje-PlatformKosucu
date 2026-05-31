@@ -3,7 +3,7 @@
 #include "Player.hpp"
 #include <vector>
 #include "Platform.hpp"
-#include <ctime> // rastgele sayıları zamana göre değiştirmek için
+#include <ctime> 
 #include "Enemy.hpp"
 #include <iostream>
 #include "Coin.hpp"
@@ -16,7 +16,6 @@ void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* c
     float spacing = 45.0f; 
     float startX = newX + (150.0f - spacing - 24.0f) / 2.0f; 
     
-    // coinTexture zaten bir pointer (adres) olduğu için başına tekrar & koymuyoruz
     coins.push_back(Coin(coinTexture, sf::Vector2f(startX, newY - 35.0f)));
     coins.push_back(Coin(coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
 }
@@ -318,7 +317,8 @@ auto resetGame = [&]() {
                 if(event.mouseButton.button == sf::Mouse::Left){
                     // farenin pencere içindeki piksel koordinatını alıyoruz
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                    //sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                    sf::Vector2f mousePosF = window.mapPixelToCoords(mousePos);
 
                     // eğer tıklanan yer Next Level butonunun sınırları içindeyse gerçek level geçişini yapması için
                     if(nextLevelButton.getGlobalBounds().contains(mousePosF)){
@@ -351,7 +351,8 @@ auto resetGame = [&]() {
             if(isGameOverScreen && event.type == sf::Event::MouseButtonPressed){
                 if(event.mouseButton.button == sf::Mouse::Left){
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                    //sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                    sf::Vector2f mousePosF = window.mapPixelToCoords(mousePos);
 
                     // Eğer Try Again butonuna tıklandıysa her şeyi sıfırla
                     if(tryAgainButton.getGlobalBounds().contains(mousePosF)){
@@ -366,8 +367,9 @@ auto resetGame = [&]() {
         if (isGameFinishedScreen && event.type == sf::Event::MouseButtonPressed) {
             if (event.mouseButton.button == sf::Mouse::Left) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
-
+                //sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosF = window.mapPixelToCoords(mousePos);
+                
                 // Eğer Play Again butonuna tıklandıysa her şeyi manuel sıfırla
                 if (playAgainButton.getGlobalBounds().contains(mousePosF)) {
                     std::cout << "Play Again butonuna tiklandi! Oyun bastan basliyor..." << std::endl;

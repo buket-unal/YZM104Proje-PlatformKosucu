@@ -1,7 +1,6 @@
 #include "Player.hpp"
 
 Player::Player() {
-
     shape.setSize(sf::Vector2f(30.0f, 40.0f));
     shape.setFillColor(sf::Color::Red);
     shape.setPosition(100.0f, 100.0f);
@@ -11,12 +10,10 @@ Player::Player() {
 
     if (!this->textureIdle.loadFromFile("assets/player.png") || 
         !this->textureWalk.loadFromFile("assets/player_walk.png")) {
-        // Hata kontrolü
+        // hata kontrolü
     }
-    
-    // Sprite'a bu resmi kullanmasını söylüyoruz
+
     sprite.setTexture(textureIdle);
-    // resim çok küçükse (pixel art olduğu için) 2 kat büyütelim
     sprite.setScale(2.0f, 2.0f);
 
 
@@ -28,7 +25,7 @@ Player::Player() {
 
     // ---- ANİMASYON DURUMLARI ----
     currentFrame = 0; // ilk resimle başlayacak
-    isMoving = false; // başlangıçta karakter dursun
+    isMoving = false; 
 
     // ---- OYUN İSTATİSTİKLERİ ----
     health = 6;
@@ -44,15 +41,13 @@ void Player::update(float deltaTime, sf::Sound& jumpSound) {
         }
     }
 
-    // KRİTİK DÜZELTME: Hasar alındıktan sonraki ilk 0.2 saniye boyunca
+    // Hasar alındıktan sonraki ilk 0.2 saniye boyunca
     // klavye girdilerini tamamen engelliyorum (Knockback Kilitlenmesi)
 
     if(isInvincible && damageTimer.getElapsedTime().asSeconds() < 0.2f){
-        // Yer çekimini fırlama hızına uygulamaya devam etmek için hareketi işletiyorum
         velocity.y += gravity * 60.0f; 
         shape.move(velocity * deltaTime); 
-        sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y - 8.0f); // -8.0f zemine sıfır 
-
+        sprite.setPosition(shape.getPosition().x - 10, shape.getPosition().y - 8.0f);  
         return;
     }
     else{
@@ -83,7 +78,6 @@ void Player::update(float deltaTime, sf::Sound& jumpSound) {
 
     // ---- ANİMASYON VE GÖRSEL MANTIK ----
     if(!isGrounded){
-        // karakter havadaysa,zıplıyorsa; yürümeyi değil zıplama resmini gösterecek
         sprite.setTexture(textureWalk);
     }
     else if(isMoving){
@@ -97,11 +91,10 @@ void Player::update(float deltaTime, sf::Sound& jumpSound) {
         }
     }
     else{
-        // duruyorsa sabit durma resmi
         sprite.setTexture(textureIdle);
     }
     
-    // yön ayarları
+    // Yön Ayarları
     if(velocity.x > 0){ // sağa gidiyorsa
         // orijinsl resim sola baktığı için sağa giderken ayna efekti yapıyorum
         sprite.setScale(-2.0f, 2.0f);
@@ -115,10 +108,7 @@ void Player::update(float deltaTime, sf::Sound& jumpSound) {
 
     // ÖLÜMSÜZLÜK efektini renkle belli etmek için
     if(isInvincible){
-        //damageTimer'ı milisnaiyeye çevirip 150'ye bölüyorum
-        // %2 olduğunda sonuç sürekli 0 veya 1 çıkacak(hızlıca yanıp sönme hissi verecek)
         int timeMs = static_cast<int>(damageTimer.getElapsedTime().asMilliseconds());
-
         if((timeMs / 150) % 2 == 0){
             sprite.setColor(sf::Color(255, 0, 0, 70)); // şeffaf hali
         } else{
@@ -132,11 +122,8 @@ void Player::update(float deltaTime, sf::Sound& jumpSound) {
 }
 
 void Player::checkCollision(std::vector<Platform>& platforms){
-    // karakterin kendi sınıflarını (hayalet kutusunu) alıyoruz
+    // karakterin kendi sınıflarını (hayalet kutusunu) alıyorum
     sf::FloatRect playerBounds = shape.getGlobalBounds();
-
-    // varsayılan olarak havada olduğunu kabul edilecek
-    // aşağıda döngüde bir yere değiyorsa true yapılacak
     bool touchAnyPlatform = false;
 
     for(auto& platform : platforms){
@@ -151,7 +138,10 @@ void Player::checkCollision(std::vector<Platform>& platforms){
         // eğer yataydaki iç içe geçme daha küçükse bu bir yandan çarpmadır
         if(overlapX < overlapY){
             // oyuncu platformun solundaysa (sağa doğru çarpıyorsa)
+            // karakterin merkez noktası, platformun merkez noktasından daha soldaysa, karakter platformun sol duvarına çarpmıştır
                 if(playerBounds.left + playerBounds.width / 2.0f < platformBounds.left + platformBounds.width / 2.0f){
+// karakteri platformun içine girmekten kurtarmak için onu geriye doğru iter. karakterin yeni x koordinatını, 
+// platformun başladığı yerin (platformBounds.left) karakterin kendi genişliği kadar gerisine (- playerBounds.width) sabitler
                 shape.setPosition(platformBounds.left - playerBounds.width, playerBounds.top);
                 }
             // oyuncu platformun sağındaysa (sola doğru çarpıyorsa)
@@ -182,7 +172,6 @@ void Player::checkCollision(std::vector<Platform>& platforms){
 }
 
 void Player::draw(sf::RenderWindow& window) {
-    // window.draw(shape);
     window.draw(sprite);
 }
 
@@ -199,15 +188,14 @@ void Player::takeDamage(float enemyX){
     if(!isInvincible){
         health--;
         isInvincible = true;
-        damageTimer.restart(); // şu andan itibaren kronometre başlatacak,bu karakteri hasar aldığı 0. saniye
+        damageTimer.restart(); // hasar aldığı o ilk saliseyi 0.0 olarak kabul etmek için ölümsüzlük kronometresini sıfırlayıp baştan başlatacak
 
         if(shape.getPosition().x < enemyX){
-            velocity.x = -400.0f;
+            velocity.x = -400.0f; 
         }
         else{
             velocity.x = 400.0f;
         }
-    
         velocity.y = -300.0f; // yukarı fırlaması için
         isGrounded = false;
     }
