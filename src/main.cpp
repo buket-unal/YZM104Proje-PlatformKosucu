@@ -91,6 +91,89 @@ void loadLevelAssets(int level,
     }
 }
 
+// ---- UI ÇİZİM YARDIMCILARI ----
+void drawHUD(sf::RenderWindow& window, Player& player, int score, int currentLevel, 
+             sf::Text& scoreText, sf::Text& levelText, sf::Sprite& heartSprite, 
+             sf::Texture& heartFulltex, sf::Texture& heartHalfTex, sf::Texture& heartEmptyTex) {
+             
+    // Kamerayı ekrana sabitleme
+    window.setView(window.getDefaultView());
+
+    // Yazıları güncelleme ve çizme
+    scoreText.setString("Skor: " + std::to_string(score));
+    scoreText.setPosition(180.0f, 20.0f);
+    window.draw(scoreText);
+
+    levelText.setString("Level: " + std::to_string(currentLevel));
+    levelText.setPosition(300.0f, 20.0f);
+    window.draw(levelText);
+
+    // Yarım/Tam Kalp Motoru
+    int currentHealth = player.getHealth();
+    for (int i = 0; i < 3; i++) {
+        float heartX = 20.0f + (i * 45.0f);
+        heartSprite.setPosition(heartX, 20.0f);
+
+        if (currentHealth >= (i * 2) + 2) {
+            heartSprite.setTexture(heartFulltex);
+        } else if (currentHealth == (i * 2) + 1) {
+            heartSprite.setTexture(heartHalfTex);
+        } else {
+            heartSprite.setTexture(heartEmptyTex);
+        }
+        window.draw(heartSprite);
+    }
+}
+
+void drawGameScreens(sf::RenderWindow& window, sf::Font& gameFont, int currentLevel, int score,
+                      bool isLevelCompleteScreen, bool isGameOverScreen, bool isGameFinishedScreen,
+                      sf::RectangleShape& overlayPanel, sf::RectangleShape& nextLevelButton, sf::Text& buttonText,
+                      sf::RectangleShape& gameOverOverlay, sf::RectangleShape& tryAgainButton, sf::Text& tryAgainText,
+                      sf::RectangleShape& gameCompleteOverlay, sf::RectangleShape& playAgainButton, sf::Text& playAgainText) {
+                      
+    window.setView(window.getDefaultView());
+
+    // 1. LEVEL GEÇİŞ EKRANI
+    if (isLevelCompleteScreen) {
+        window.draw(overlayPanel);   
+        window.draw(nextLevelButton); 
+        window.draw(buttonText);      
+        
+        sf::Text congratsText("CONGRATS!\nYou have completed level " + std::to_string(currentLevel) + "\nTotal Score: " + std::to_string(score), gameFont, 30);
+        congratsText.setFillColor(sf::Color::Yellow);
+        congratsText.setStyle(sf::Text::Bold);
+        congratsText.setPosition(250.0f, 200.0f);
+        window.draw(congratsText);
+    }
+
+    // 2. GAME OVER EKRANI
+    if (isGameOverScreen) {
+        window.draw(gameOverOverlay);
+        window.draw(tryAgainButton);
+        window.draw(tryAgainText);
+        
+        sf::Text gameOverText("GAME OVER\nYour Journey Ended at Level " + std::to_string(currentLevel), gameFont, 35);
+        gameOverText.setFillColor(sf::Color::White);
+        gameOverText.setStyle(sf::Text::Bold);
+        gameOverText.setPosition(220.0f, 200.0f);
+        window.draw(gameOverText);
+    }
+
+    // 3. OYUN BİTİŞ EKRANI
+    if (isGameFinishedScreen) {
+        window.draw(gameCompleteOverlay);
+        window.draw(playAgainButton);
+        window.draw(playAgainText);
+
+        sf::Text winText("CONGRATULATIONS!\nYou Have Finished The Game!", gameFont, 35);
+        winText.setFillColor(sf::Color::Yellow);
+        winText.setStyle(sf::Text::Bold);
+        winText.setPosition(160.0f, 200.0f);
+        window.draw(winText);
+    }
+}
+
+
 int main() {
     srand(19);
 
@@ -629,154 +712,33 @@ auto resetGame = [&]() {
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
        
 
-        // ---------------------------- ÇİZİM ----------------------------
+// ---------------------------- ÇİZİM ----------------------------
         window.clear();     
 
-        // ---- ARKA PLAN GÖRSEL YÖNETİMİ ----
-        if(currentLevel == 2){
-            backgroundSprite.setTexture(backgroundTexture);
-            backgroundSprite.setColor(sf::Color::White);
-        }
-        else if(currentLevel >= 3){
-            backgroundSprite.setTexture(backgroundTexture);
-            backgroundSprite.setColor(sf::Color::White);
-        }
-        else{
-            backgroundSprite.setTexture(backgroundTexture);
-            backgroundSprite.setColor(sf::Color::White);
-        }
-        window.draw(backgroundSprite); // gökyüzünü çizdirdim
+        // Arka plan ve Dünya Nesnelerini Çizdir (Burası kamerayı takip eden dünya)
+        window.draw(backgroundSprite); 
+        for (auto& platform : platforms) platform.draw(window);
 
-        // platformları çizdiriyorum (Döngü ile listedeki her şeyi ekrana basacak)
-        for (auto& platform : platforms) {
-            platform.draw(window);
-        }
-
-        // ---- LEVEL 3: ASİT BLOKLARINI EKRANA ÇİZME ----
         if (currentLevel >= 3) {
-            for(const auto& fill : acidFills){
-                window.draw(fill);
-            }
-            for (const auto& acid : acidHazards) {
-                window.draw(acid);
-            }
+            for(const auto& fill : acidFills) window.draw(fill);
+            for (const auto& acid : acidHazards) window.draw(acid);
         }
 
-        // listedeki her bir düşmanı ekranan tek tek çizdireceğim
-        for(auto& enemy : enemies){
-            enemy.draw(window);
-        }
-        for(auto& fEnemy : flyingEnemies){
-            fEnemy.draw(window);
-        }
-        // coinleri çizdirme (sadece toplanmayanları çizdiriyorum)
-        for(auto& coin : coins){
-            if(!coin.isCollected()){
-                coin.draw(window);
-            }
-        }
-        
-        if(isPortalSpawned){
-            window.draw(portalKutusu);
-        }
-        player.draw(window); // karakteri en son çizdiriyorum ki her şeyin önünde görünsün
+        for(auto& enemy : enemies) enemy.draw(window);
+        for(auto& fEnemy : flyingEnemies) fEnemy.draw(window);
+        for(auto& coin : coins) { if(!coin.isCollected()) coin.draw(window); }
+        if(isPortalSpawned) window.draw(portalKutusu);
+        player.draw(window); 
 
-        // CAN Görseli Çizimi ve Sabir Ekran Ayarı
-        window.setView(window.getDefaultView());
+        // Sabit HUD elemanlarını (Can, Skor, Seviye) çizdirme
+        drawHUD(window, player, score, currentLevel, scoreText, levelText, heartSprite, heartFulltex, heartHalfTex, heartEmptyTex);
 
-        // YAZILARI ÇİZDİRME
-        // Skor yazısını dinamik skor değişkenine bağlayıp kalplerin sağ tarafına (280, 20) koyuyorum
-        scoreText.setString("Skor: " + std::to_string(score));
-        scoreText.setPosition(180.0f, 20.0f);
-        window.draw(scoreText);
-
-        // Level yazısını dinamik level değişkenine bağlayıp skorun hemen yanına (420, 20) koyuyorum
-        levelText.setString("Level: " + std::to_string(currentLevel));
-        levelText.setPosition(300.0f, 20.0f);
-        window.draw(levelText);
-
-        // YENİ YARIM KALP ÇİZİM MOTORU:
-        int currentHealth = player.getHealth(); // Oyuncunun anlık canı (0 ile 6 arasında)
-
-        for (int i = 0; i < 3; i++) {
-            // Kalbin ekran üzerindeki yan yana X pozisyonunu hesaplıyorum
-            float heartX = 20.0f + (i * 45.0f);
-            heartSprite.setPosition(heartX, 20.0f);
-
-            // Eğer bu kalp yuvası için oyuncunun en az 2 canı varsa -> TAM KALP çizecek
-            if (currentHealth >= (i * 2) + 2) {
-                heartSprite.setTexture(heartFulltex);
-                window.draw(heartSprite);
-            }
-            // Eğer oyuncunun tam 1 canı kalmışsa bu yuvaya -> YARIM KALP çizecek
-            else if (currentHealth == (i * 2) + 1) {
-                heartSprite.setTexture(heartHalfTex);
-                window.draw(heartSprite);
-            }
-            else{
-                heartSprite.setTexture(heartEmptyTex);
-                window.draw(heartSprite);
-            }
-        }
-
-        if (isLevelCompleteScreen) {
-            window.setView(window.getDefaultView()); 
-
-            //overplayPanel.setPosition(0.0f, 0.0f);
-
-            window.draw(overlayPanel);   
-            window.draw(nextLevelButton); 
-            window.draw(buttonText);      
-            
-            sf::Text congratsText;
-            congratsText.setFont(gameFont);
-            congratsText.setString("CONGRATS!\nYou have completed level " + to_string(currentLevel) + "\nTotal Score: " + to_string(score));
-            congratsText.setCharacterSize(30);
-            congratsText.setFillColor(sf::Color::Yellow);
-            congratsText.setStyle(sf::Text::Bold);
-            congratsText.setPosition(250.0f, 200.0f);
-            window.draw(congratsText);
-        }
-
-        // GAME OVER EKRANI ÇİZİMİ
-        if (isGameOverScreen) {
-            window.setView(window.getDefaultView()); // Arayüzü ekrana sabitlemek için
-
-            window.draw(gameOverOverlay);   // Koyu kırmızı arka plan paneli
-            window.draw(tryAgainButton);    // Yeniden dene butonu
-            window.draw(tryAgainText);      // Buton yazısı
-            
-            sf::Text gameOverText;
-            gameOverText.setFont(gameFont);
-            gameOverText.setString("GAME OVER\nYour journey ended at Level " + to_string(currentLevel));
-            gameOverText.setCharacterSize(35);
-            gameOverText.setFillColor(sf::Color::White);
-            gameOverText.setStyle(sf::Text::Bold);
-            
-            // Yazıyı ekrana ortalamak için
-            gameOverText.setPosition(220.0f, 200.0f);
-            window.draw(gameOverText);
-        }
-
-        // GAME COMPLETE EKRANI ÇİZİMİ
-        if(isGameFinishedScreen){
-            window.setView(window.getDefaultView());
-            
-            window.draw(gameCompleteOverlay);
-            window.draw(playAgainButton);
-            window.draw(playAgainText);
-
-            sf::Text winText;
-            winText.setFont(gameFont);
-            winText.setString("CONGRATULATIONS!\nYou Have Finished The Game!");
-            winText.setCharacterSize(35);
-            winText.setFillColor(sf::Color::Yellow);
-            winText.setStyle(sf::Text::Bold);
-
-            // Yazıyı ekrana ortalamak için pozisyon ayarı
-            winText.setPosition(160.0f, 200.0f);
-            window.draw(winText);
-        }
+        // Durum ekranlarını (Giriş/Çıkış panellerini) çizdirme
+        drawGameScreens(window, gameFont, currentLevel, score,
+                        isLevelCompleteScreen, isGameOverScreen, isGameFinishedScreen,
+                        overlayPanel, nextLevelButton, buttonText,
+                        gameOverOverlay, tryAgainButton, tryAgainText,
+                        gameCompleteOverlay, playAgainButton, playAgainText);
 
         window.display();
     }
