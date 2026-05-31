@@ -20,6 +20,8 @@ add_executable(PlatformKosucu
         src/Coin.hpp
         src/FlyingEnemy.cpp
         src/FlyingEnemy.hpp
+        src/GameFunctions.cpp
+        src/GameFunctions.hpp
         )
 
 target_link_libraries(PlatformKosucu sfml-graphics sfml-window sfml-system sfml-audio)
