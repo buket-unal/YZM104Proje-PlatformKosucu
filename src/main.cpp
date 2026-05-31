@@ -20,6 +20,26 @@ void spawnCoins(float newX, float newY, std::vector<Coin>& coins, sf::Texture* c
     coins.push_back(Coin(coinTexture, sf::Vector2f(startX + spacing, newY - 35.0f)));
 }
 
+// ---- GENEL HAFIZA SİLECEK ----
+template <typename T>
+void temizleEkranDisiNesneler(std::vector<T>& liste, float silecekSinirX) {
+    liste.erase(
+        std::remove_if(liste.begin(), liste.end(), [silecekSinirX](const T& nesne) {
+            return (nesne.getBounds().left + nesne.getBounds().width) < silecekSinirX;
+        }),
+        liste.end()
+    );
+}
+
+void temizleAltinlar(std::vector<Coin>& coins, float silecekSinirX) {
+    coins.erase(
+        std::remove_if(coins.begin(), coins.end(), [silecekSinirX](const Coin& c) {
+            return c.isCollected() || (c.getBounds().left + c.getBounds().width) < silecekSinirX;
+        }),
+        coins.end()
+    );
+}
+
 // Kod tekrarlarını önlemek için haritayı ilk standart haline getiren fonksiyon
 void initializeStartingMap(std::vector<Platform>& platforms, std::vector<Coin>& coins, sf::Texture* platformTexture, sf::Texture* coinTexture, int currentLevel) {
     // Ana zeminler (Genişlik: 12000px)
@@ -39,6 +59,38 @@ void initializeStartingMap(std::vector<Platform>& platforms, std::vector<Coin>& 
     }
 }
 
+void loadLevelAssets(int level, 
+                    sf::Texture& backgroundTexture, 
+                    sf::Texture& enemyTexture, 
+                    sf::Texture& enemySmallTexture, 
+                    sf::Texture& flyingEnemyOpenTexture, 
+                    sf::Texture& flyingEnemyClosedTexture, 
+                    sf::Texture& acidTexture) {
+    if (level == 1) {
+        if (!backgroundTexture.loadFromFile("assets/level1/background.png") || 
+            !enemyTexture.loadFromFile("assets/level1/enemy.png") ||
+            !enemySmallTexture.loadFromFile("assets/enemy_small.png")) {
+            std::cout << "Level 1 gorselleri yuklenemedi!" << std::endl;
+        }
+    } 
+    else if (level == 2) {
+        if (!backgroundTexture.loadFromFile("assets/level2/background_night.png") ||
+            !flyingEnemyOpenTexture.loadFromFile("assets/level2/flying_enemy_open.png") ||
+            !flyingEnemyClosedTexture.loadFromFile("assets/level2/flying_enemy_closed.png")) {
+            std::cout << "Level 2 gorselleri yuklenemedi!" << std::endl;
+        }
+        backgroundTexture.setRepeated(true);
+    } 
+    else if (level == 3) {
+        if (!backgroundTexture.loadFromFile("assets/level3/background_cave.png") ||
+            !acidTexture.loadFromFile("assets/level3/hazard_liquid.png")) {
+            std::cout << "Level 3 gorselleri yuklenemedi!" << std::endl;
+        }
+        backgroundTexture.setRepeated(true);
+        acidTexture.setRepeated(true);
+    }
+}
+
 int main() {
     srand(19);
 
@@ -47,67 +99,44 @@ int main() {
     window.setFramerateLimit(60);
     sf::View view(sf::FloatRect(0, 0, 800, 600)); 
 
-    // ---- VARLIKLARIN (ASSETS) YÜKLENMESİ ----
+    // ------------ OYUN İSTATİSTİKLERİ VE SEVİYE DURUMU ------------
+    int score = 0;              // Toplanan altın sayısını tutacak kalıcı kasa
+    int currentLevel = 1;       // Oyunun başladığı ilk seviye
+    bool isPortalSpawned = false; // Bölüm sonu portalı doğdu mu kontrolü
+
+
+    // ---- VARLIKLARIN TANIMLANMASI ----
     sf::Texture backgroundTexture, enemyTexture, coinTexture, platformTexture, portalTexture, enemySmallTexture;
-    if(!backgroundTexture.loadFromFile("assets/level1/background.png") || 
-        !enemyTexture.loadFromFile("assets/level1/enemy.png") ||
-        !coinTexture.loadFromFile("assets/coin.png") || 
+    sf::Texture flyingEnemyOpenTexture, flyingEnemyClosedTexture, acidTexture;
+
+    // Her seviyede kesinlikle değişmeyen ortak objeleri yüklüyorum
+    if (!coinTexture.loadFromFile("assets/coin.png") || 
         !platformTexture.loadFromFile("assets/ground_dirt2.png") || 
-        !portalTexture.loadFromFile("assets/portal.png") ||
-        !enemySmallTexture.loadFromFile("assets/enemy_small.png")){
-        cout << "Gorseller yuklenemedi!" << endl;
+        !portalTexture.loadFromFile("assets/portal.png")) {
+        std::cout << "Ortak gorseller yuklenemedi!" << std::endl;
     }
 
-    // ---- LEVEL 2 GECE ARKA PLANI YÜKLEME ----
-    sf::Texture backgroundNightTexture;
-    if(!backgroundNightTexture.loadFromFile("assets/level2/background_night.png")){
-        std::cout << "Gorsel yuklenemedi!" << std::endl;
-    }
-    backgroundNightTexture.setRepeated(true);
+    // ---- Sadece Level 1 Resimlerini RAM'e Yüklüyorum ----
+    loadLevelAssets(currentLevel, backgroundTexture, enemyTexture, enemySmallTexture, 
+                    flyingEnemyOpenTexture, flyingEnemyClosedTexture, acidTexture);
 
-    // ---- LEVEL 2 FLYINGENEMY GÖRSELLERİ ---- 
-    sf::Texture flyingEnemyOpenTexture;
-    sf::Texture flyingEnemyClosedTexture;
-
-    if(!flyingEnemyOpenTexture.loadFromFile("assets/level2/flying_enemy_open.png") ||
-        !flyingEnemyClosedTexture.loadFromFile("assets/level2/flying_enemy_closed.png")){
-            std::cout << "Gorseller yuklenemedi!" << std::endl;
-        }
-    
-    // ---- LEVEL 3 MAĞARA VE ASİT GÖRSELLERİ YÜKLEME ----
-    sf::Texture backgroundCaveTexture;
-    if(!backgroundCaveTexture.loadFromFile("assets/level3/background_cave.png")){
-        std::cout << "Gorseller yuklenemedi!" << std::endl;
-    }   
-    backgroundCaveTexture.setRepeated(true);
-    
-    sf::Texture acidTexture;
-    if(!acidTexture.loadFromFile("assets/level3/hazard_liquid.png")){
-        std::cout << "Gorseller yuklenemedi!" << std::endl;
-    }
-    acidTexture.setRepeated(true);
-
+    // ------------ GEOMETRİK PORTAL VE HİTBOX AYARLARI ------------
     sf::RectangleShape portalKutusu(sf::Vector2f(250.0f, 300.0f));
-    portalKutusu.setTexture(&portalTexture);
+    portalKutusu.setTexture(&portalTexture); // Ekranda görünecek süslü portal resmi
 
     // Sadece çarpışmayı algılayacak görünmez dar hitbox (Genişlik: 40, Yükseklik: 200)
     sf::RectangleShape portalHitbox(sf::Vector2f(40.0f, 200.0f));
     portalHitbox.setFillColor(sf::Color::Transparent); // Tamamen görünmez yapıyorum
 
-    backgroundTexture.setRepeated(true);
-    sf::Sprite backgroundSprite;
-    backgroundSprite.setTexture(backgroundTexture);
-    //üstteki 2 satır yerine direkt sf::Sprite backgroundSprite(backgroundTexture); yazabilirim
-    // arka planı çok geniş bir dikdörtgen olarak ayarladım
+    // ---- ARKA PLAN (SPRITE) AYARI ----
+    // backgroundTexture.setRepeated(true) ayarını loadLevelAssets içinde de yaptığımız için burada güvenle sprite'a bağlıyorum
+    sf::Sprite backgroundSprite(backgroundTexture); 
     backgroundSprite.setTextureRect(sf::IntRect(0, 0, 1600, 600));
 
-    int score = 0; // toplanan altın sayınını tutacak
-    int currentLevel = 1;
-    bool isPortalSpawned = false;
-    
-    // ------------ OYUN NESNELERİ ------------
+    // ------------ OYUN NESNELERİ (VEKTÖRLER) ------------
     Player player;
-    player.setHealth(6);
+    player.setHealth(6); 
+    
     std::vector<Enemy> enemies;
     std::vector<Platform> platforms;
     std::vector<Coin> coins;
@@ -115,6 +144,7 @@ int main() {
     std::vector<sf::RectangleShape> acidHazards;
     std::vector<sf::RectangleShape> acidFills;
 
+    // İlk bölümün harita zeminlerini ve altınlarını harita motoruyla otomatik döşüyorum
     initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
 
     // ---- SES DOSYALARININ YÜKLENMESİ ----
@@ -130,7 +160,7 @@ int main() {
     sf::Sound jumpSound(jumpBuffer);
     sf::Sound damageSound(damageBuffer);
 
-    // ses seviyeleri
+    // Ses seviyesi optimizasyonları
     coinSound.setVolume(40.0f);
     jumpSound.setVolume(50.0f);
     damageSound.setVolume(50.0f);
@@ -142,7 +172,6 @@ int main() {
     // ---- SABİT PLATFORMLARIN ÜZERİNE ALTIN YERLEŞTİRME ----
     for(auto& platform : platforms){
         sf::FloatRect pBounds = platform.getBounds();
-
         // Eğer platform ana zemin değilse (Y koordinatı 550'den küçükse, yani havadaysa)
         if(pBounds.top < 550.0f){
             // tek tek elle eklemek yerine döngüdeki spawnCoins motorunu çsğırdım
@@ -175,8 +204,8 @@ int main() {
     bool isLevelCompleteScreen = false; // geçiş ekranı açık mı kontrolü
 
     // Geçiş ekranının arkasındaki hafif şeffaf siyah panel
-    sf::RectangleShape overplayPanel(sf::Vector2f(800.0f, 600.0f));
-    overplayPanel.setFillColor(sf::Color(0, 0, 0, 130));
+    sf::RectangleShape overlayPanel(sf::Vector2f(800.0f, 600.0f));
+    overlayPanel.setFillColor(sf::Color(0, 0, 0, 130));
 
     // Level 2'ye geçiş butonu (kutu olarak)
     sf::RectangleShape nextLevelButton(sf::Vector2f(200.0f, 60.0f));
@@ -252,23 +281,14 @@ int main() {
     sf::Clock clock;
 
     // -------- CAN ARAYÜZÜ --------
-    sf::Texture heartFulltex;
-    if(!heartFulltex.loadFromFile("assets/heart_full.png")){
-        // hata mesajı
+    sf::Texture heartFulltex, heartHalfTex, heartEmptyTex;
+    if(!heartFulltex.loadFromFile("assets/heart_full.png") || 
+        !heartHalfTex.loadFromFile("assets/heart_half.png") || 
+        !heartEmptyTex.loadFromFile("assets/heart_empty.png")){
+        std::cout << "Kalp gorselleri yuklenemedi!" << std::endl;
     }
-    sf::Sprite heartSprite;
-    heartSprite.setTexture(heartFulltex);
+    sf::Sprite heartSprite(heartFulltex);
     heartSprite.setScale(2.0f, 2.0f);
-
-    sf::Texture heartHalfTex; // Yarım kalp dokusu
-    if(!heartHalfTex.loadFromFile("assets/heart_half.png")){ 
-        std::cout << "Yarim kalp gorseli yuklenemedi!" << std::endl;
-    }
-
-    sf::Texture heartEmptyTex; // Boş kalp dokusu
-    if(!heartEmptyTex.loadFromFile("assets/heart_empty.png")){ 
-        std::cout << "Bos kalp gorseli yuklenemedi!" << std::endl;
-    }
 
     // Oyun döngüsünden hemen önce tanımlanan RESETGAME FONKSİYONU
 auto resetGame = [&]() {
@@ -298,9 +318,12 @@ auto resetGame = [&]() {
     // 5. Harita motorunu ilk günkü haline getirmesi için
     srand(19);
 
+    loadLevelAssets(currentLevel, backgroundTexture, enemyTexture, enemySmallTexture, 
+                        flyingEnemyOpenTexture, flyingEnemyClosedTexture, acidTexture);
+        backgroundSprite.setTexture(backgroundTexture);
+
     // 6. İlk bölüm zeminlerini ve altınlarını yeniden oluşturması için
     initializeStartingMap(platforms, coins, &platformTexture, &coinTexture, currentLevel);
-    
     std::cout << "Oyun basariyla tek bir merkezden sifirlandi!" << std::endl;
 };
 
@@ -311,18 +334,24 @@ auto resetGame = [&]() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
 
-            // FARE TIKLAMA KONTROLÜ (TEBRİKLER EKRANI)
+            // FARE TIKLAMA KONTROLÜ (TEBRİKLER EKRANI) (NEXT LEVEL)
             // eğer tebrikler ekranı açıksa ve sol fare tıkı yapıldıysa
             if(isLevelCompleteScreen && event.type == sf::Event::MouseButtonPressed){
                 if(event.mouseButton.button == sf::Mouse::Left){
                     // farenin pencere içindeki piksel koordinatını alıyoruz
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                    //sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
                     sf::Vector2f mousePosF = window.mapPixelToCoords(mousePos);
 
                     // eğer tıklanan yer Next Level butonunun sınırları içindeyse gerçek level geçişini yapması için
                     if(nextLevelButton.getGlobalBounds().contains(mousePosF)){
                         currentLevel++;
+
+                        loadLevelAssets(currentLevel, backgroundTexture, enemyTexture, enemySmallTexture, 
+                                        flyingEnemyOpenTexture, flyingEnemyClosedTexture, acidTexture);
+                               
+                        if(currentLevel == 2) backgroundSprite.setTexture(backgroundTexture); // night texture
+                        else if(currentLevel == 3) backgroundSprite.setTexture(backgroundTexture); // cave texture
+
                         std::cout << "Butona tiklandi! Level" << currentLevel << " yukleniyor..." << std::endl;
 
                         player.resetPosition();
@@ -384,10 +413,10 @@ auto resetGame = [&]() {
         }
     }   
      
-        // ** GÜNCELLEME **
+        // ------- GÜNCELLEME -------
         float deltaTime = clock.restart().asSeconds(); // zamanı başlattım
 
-        if(!isLevelCompleteScreen && !isGameOverScreen){
+        if(!isLevelCompleteScreen && !isGameOverScreen && !isGameFinishedScreen){
 
             // Oyuncunun canı bittiyse Game Over ekranını tetiklemesi için
             if(player.getHealth() <= 0){
@@ -400,7 +429,7 @@ auto resetGame = [&]() {
         player.checkCollision(platforms); // Artık sayı değil, liste gönderiyor
         
 
-        // YENİ SAVAŞMA VE EZME MOTORU:
+        // SAVAŞMA VE EZME MOTORU:
         for (auto it = enemies.begin(); it != enemies.end(); ) {
             // eğer düşman zaten küçülmüşse ve ekranda kalma süresi dolmuşsa listeden çıkarması için
             if(it->isDead()){
@@ -495,7 +524,7 @@ auto resetGame = [&]() {
             
         }
     
-        // * SONSUZ PLATFORM Üretimi *
+           // * SONSUZ PLATFORM Üretimi *
         if(lastX < 9000.0f){  // platformları hangi zemine kadar üretmeye devam edeceğini belirkemek için
             if(player.getPosition().x + 800.0f > lastX){
                 float newX = lastX + (rand() % 200 + 200); 
@@ -530,16 +559,12 @@ auto resetGame = [&]() {
 
                 }
                 
-                // Rastgele bir şans sayısı seçiyoruz (0-99 arası)
                 int sans = rand() % 100;
                 if (sans < 50) {
                  // %50 şansla platformun üzerine 2 adet altın koyması için
                  spawnCoins(newX, newY, coins, &coinTexture);
                 }
                 else if (sans >= 50 && sans < 80 && currentLevel < 3) {
-                 // %30 şansla platformun üzerine bir adet devriye gezen düşman oturtmak için
-                 // newY - 40.0f yapıyorum ki düşman platformun içine gömülmesin, üzerinde dursun
-                 // range değerini 100.0f yapıyorum ki platform genişliği olan 150 içinde sağa sola dönebilsin
                  float groundEnemyY = 550.0f;
                  enemies.push_back(Enemy(&enemyTexture, &enemySmallTexture, &gameFont, sf::Vector2f(newX + 50.0f, groundEnemyY), 250.0f));
              }
@@ -559,7 +584,7 @@ auto resetGame = [&]() {
             }
         }
         
-
+        
         // * KAMERA ve ARKA PLAN Pozisyonu *
         // karakterlerin konumunu alıp kamerayı oraya odaklıyoruz
         view.setCenter(player.getPosition().x, 300);
@@ -568,63 +593,32 @@ auto resetGame = [&]() {
         sf::Vector2f cameraPos = view.getCenter() - (view.getSize() / 2.0f); // kameranın sol üst köşesini hesapla
         backgroundSprite.setPosition(cameraPos.x, cameraPos.y); // arka planı kamera hızından biraz daha yavaş hareket ettiriyorum
         
-        int offsetX = static_cast<int>(cameraPos.x * 0.1f);
+        int offsetX = static_cast<int>(cameraPos.x * 0.1f); // derinlik etkisi için
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
 
         
         // * Ölüm Kontrolü (Aşağı Düşme ve Tam Reset) *
-        if(player.getPosition().y > 1000.0f){
-            
+        if(player.getPosition().y > 1000.0f){   
            resetGame();
            std::cout << "Oyuncu öldü, harita ve nesneler ilk konumlarına başarıyla sıfırlandı!" << std::endl;
         }
     
         // ---- HAFIZA TEMİZLİĞİ ----
         float silecekSinirX = cameraPos.x - 1000.0f;
-        //arkada kalan platformları silmek için
-        platforms.erase(
-            std::remove_if(platforms.begin(), platforms.end(), [silecekSinirX](const Platform& p){
-                return (p.getBounds().left + p.getBounds().width) < silecekSinirX;
-            }),
-            platforms.end()
-        );
 
-        enemies.erase(
-            std::remove_if(enemies.begin(), enemies.end(), [silecekSinirX](const Enemy& e) {
-                return (e.getBounds().left + e.getBounds().width) < silecekSinirX;
-            }),
-            enemies.end()
-        );
+        temizleEkranDisiNesneler(platforms, silecekSinirX);
+        temizleEkranDisiNesneler(enemies, silecekSinirX);
+        temizleAltinlar(coins, silecekSinirX); // Altınların kendi özel fonksiyonu
+        temizleEkranDisiNesneler(flyingEnemies, silecekSinirX);
+        
+        // asit kutuları direkt sf::RectangleShape olduğu için getBounds() yerine getGlobalBounds()  
 
-        coins.erase(
-            std::remove_if(coins.begin(), coins.end(), [silecekSinirX] (const Coin& c){
-                return c.isCollected() || (c.getBounds().left + c.getBounds().width) < silecekSinirX;
-            }),
-            coins.end()
-        );
+        acidHazards.erase(std::remove_if(acidHazards.begin(), acidHazards.end(), [silecekSinirX](const sf::RectangleShape& a){ return (a.getPosition().x + a.getSize().x) < silecekSinirX; }), acidHazards.end());
+        acidFills.erase(std::remove_if(acidFills.begin(), acidFills.end(), [silecekSinirX](const sf::RectangleShape& f){ return (f.getPosition().x + f.getSize().x) < silecekSinirX; }), acidFills.end());
 
-        flyingEnemies.erase(
-            std::remove_if(flyingEnemies.begin(), flyingEnemies.end(), [silecekSinirX] (const FlyingEnemy& fEnemy){
-                return (fEnemy.getBounds().left + fEnemy.getBounds().width) < silecekSinirX;
-            }),
-            flyingEnemies.end()
-        );
-
-        acidHazards.erase(
-            std::remove_if(acidHazards.begin(), acidHazards.end(), [silecekSinirX](const sf::RectangleShape& a){
-                return (a.getPosition().x + a.getSize().x) < silecekSinirX;
-            }),
-            acidHazards.end()
-        );
-
-        acidFills.erase(
-            std::remove_if(acidFills.begin(), acidFills.end(), [silecekSinirX](const sf::RectangleShape& f){
-            return (f.getPosition().x + f.getSize().x) < silecekSinirX;
-            }),
-            acidFills.end()
-        );
     }  
-
+        
+       // silindiğinde arayüz ekranlarına zarar veriyor
         view.setCenter(player.getPosition().x, 300);
         window.setView(view);
 
@@ -633,18 +627,18 @@ auto resetGame = [&]() {
         
         int offsetX = static_cast<int>(cameraPos.x * 0.1f);
         backgroundSprite.setTextureRect(sf::IntRect(offsetX, 0, 800, 600));
-        
+       
 
         // ---------------------------- ÇİZİM ----------------------------
         window.clear();     
 
         // ---- ARKA PLAN GÖRSEL YÖNETİMİ ----
         if(currentLevel == 2){
-            backgroundSprite.setTexture(backgroundNightTexture);
+            backgroundSprite.setTexture(backgroundTexture);
             backgroundSprite.setColor(sf::Color::White);
         }
         else if(currentLevel >= 3){
-            backgroundSprite.setTexture(backgroundCaveTexture);
+            backgroundSprite.setTexture(backgroundTexture);
             backgroundSprite.setColor(sf::Color::White);
         }
         else{
@@ -730,7 +724,7 @@ auto resetGame = [&]() {
 
             //overplayPanel.setPosition(0.0f, 0.0f);
 
-            window.draw(overplayPanel);   
+            window.draw(overlayPanel);   
             window.draw(nextLevelButton); 
             window.draw(buttonText);      
             
