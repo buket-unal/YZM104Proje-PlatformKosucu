@@ -1,28 +1,64 @@
-  Platform Koşucu (Side-Scroller) 🏃‍♀️💨
+#  Platform Koşucu – 2D Side-Scroller Platform Oyunu
 
-Bu proje, Kocaeli Üniversitesi Yazılım Mühendisliği - Programlama II dersi kapsamında geliştirdiğim, C++ ve SFML kütüphanesi tabanlı bir yan kaydırmalı platform oyunudur.
+![C++17](https://img.shields.io/badge/language-C++17-blue) ![SFML](https://img.shields.io/badge/library-SFML-green) ![Status](https://img.shields.io/badge/status-active-success)
 
-  Proje Hedefi
-Oyuncu karakterinin akıcı bir şekilde hareket edebildiği, fizik kurallarına (yer çekimi, zıplama) dayalı ve tile (döşeme) tabanlı bir dünyada geçen dinamik bir oyun deneyimi sunmak.
+---
 
-  Teknik Özellikler (Mevcut Durum: 1. Hafta Tamamlandı)
-Dil: C++
-Kütüphane: SFML (Simple and Fast Multimedia Library)
-Fizik: Karakter için zıplama ve yer çekimi fiziği uygulandı.
-Kontroller: Klavye girdileri ile sağa/sola hareket ve dinamik zıplama mekanizması entegre edildi.
-Zemin Algılama:** Temel çarpışma kontrolleri ile karakterin zemin üzerinde durması sağlandı.
+## 1. Proje Hakkında
 
-   Planlanan Özellikler (Gelecek Haftalar)
- Tile Haritası: Döşemelerin birleşmesiyle oluşan geniş ve detaylı bölümler.
- Kayan Kamera: Karakteri takip eden smooth-camera sistemi.
- Düşman Yapay Zekası: Belirli hat üzerinde devriye gezen (patrol) düşman mekanikleri.
- Can ve Puan Sistemi: Coin toplama ve sağlık yönetimi arayüzü.
+Platform Koşucu, C++ programlama dili ve SFML kütüphanesi kullanılarak geliştirilmiş, dinamik (prosedürel) harita üretim motoruna sahip tek oyunculu bir yan kaydırmalı (side-scroller) platform oyunudur. YZM104 Programlama II dersi dönem projesi kapsamında hazırlanan bu oyunda oyuncu; ileri doğru hareket ettikçe canlı olarak üretilen zeminler üzerinde hayatta kalmaya, altınları toplamaya, devriye atan kara ve hava düşmanlarını atlatarak bölüm sonundaki finale ulaşmaya çalışır.
 
-   Kurulum ve Çalıştırma
-Projeyi kendi yerel ortamınızda denemek için:
+---
 
-1. SFML kütüphanesinin kurulu olduğundan emin olun.
-2. Projeyi klonlayın ve klasöre gidin.
-3. Derleme komutu:
+
+## 2. Özellikler
+
+**Prosedürel Harita ve Dinamik Akış**
+* **Dinamik Üretim:** Sabit bir harita dosyası yüklemek yerine, oyuncu ilerledikçe `srand()` mimarisine dayalı rastgele platformlar, altınlar ve düşmanlar üreten yordamsal bir motor tasarlanmıştır.
+* **Bölüm Tasarımları (Levels):** Artan zorluk seviyelerine sahip 3 benzersiz seviye bulunur. Level 2'de uçan yarasalar eklenir; Level 3'te ise dinamik üretim 10400. pikseldeki final sınırında durur ve oyunu bitiren final portalı doğar.
+
+**Gelişmiş Fizik ve Çarpışma (AABB)**
+* **Hassas Çarpışma:** Karakter için gerçekçi yer çekimi, zıplama ve yaylanma (bounce) fiziği uygulanmıştır. Döşeme tabanlı (Tile-based) platformlar ile dikey/yatay çarpışmalar AABB algoritmasıyla milimetrik çözülür.
+* **Knockback & Ölümsüzlük:** Oyuncu hasar aldığında kontroller kısa süreli kilitlenir, geriye doğru fırlatılır ve 1.5 saniye boyunca kırmızı renkte yanıp sönerek hasar almazlık (`Invincibility frame`) kazanır.
+
+**Bellek ve Performans Optimizasyonu**
+* **Hafıza Silecek Motoru:** Kamera sınırının (ekranın gerisinde) arkasında kalan tüm platform, düşman ve altınlar `std::remove_if` algoritması kullanan şablonlu (Template) bir fonksiyonla RAM'den anlık temizlenir.
+* **Pointer Yönetimi:** Çizim döngüsündeki disk okuma maliyetleri (`loadFromFile`) RAM tabanlı pointer yönetimine taşınarak FPS drop sorunları tamamen sıfırlanmıştır.
+
+---
+
+## 3. Teknoloji Yığını
+
+| Kategori | Teknoloji | Açıklama |
+| :--- | :--- | :--- |
+| **Programlama Dili** | C++ (Standart C++17) | Ana oyun mantığı, fizik hesaplamaları ve şablonlu bellek yönetimi |
+| **Grafik & Ses Kütüphanesi** | SFML | Pencere oluşturma, görsel çizimi, fontlar ve ses motoru yönetimi |
+| **Geliştirme Ortamı** | VS Code / Clion | Tercih edilen IDE/Editör |
+
+---
+
+## 4. Kontroller
+
+Oyun mantığı klavyeye, arayüz etkileşimi (ekran geçiş butonları) ise fareye dayalı olarak tasarlanmıştır:
+
+| Eylem | Tuş / Kontrol |
+| :--- | :--- |
+| **Karakteri Hareket Ettirme** | `A` - `D` veya Yön Tuşları (⬅️ ➡️) |
+| **Zıplama (Zemindeyken)** | `W` veya Yukarı Yön Tuşu (⬆️) |
+| **Arayüz Etkileşimi (Next Level / Try Again)** | Farenin Sol Tuşu |
+| **Oyundan Çıkış** | Pencereyi Kapatma İkonu (X) |
+
+---
+
+## 5. Proje Nasıl Çalıştırılır?
+
+**Ön Gereksinimler**
+* C++ Derleyicisi (GCC / G++)
+* SFML Kütüphanelerinin sisteminizde kurulu ve tanımlı olması
+
+**Kurulum Adımları**
+
+1. **Depoyu İndirin:** Proje dosyalarını yerelinize kopyalayın.
+2. **Derleme (Makefile ile):** Proje klasöründe yer alan `Makefile` sayesinde oyunu tek bir komutla derleyebilirsiniz:
    ```bash
-   g++ main.cpp -o PlatformKosucu -lsfml-graphics -lsfml-window -lsfml-system
+   make
